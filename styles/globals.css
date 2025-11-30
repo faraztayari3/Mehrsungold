@@ -1,0 +1,541 @@
+@tailwind base;
+@tailwind components;
+
+header.MuiPaper-root {
+  @apply rtl:!pr-0 ltr:!pl-0;
+}
+.MuiTabs-root {
+  @apply border-none;
+}
+.history-tabs .MuiTabs-flexContainer {
+  @apply block;
+}
+.MuiSelect-select.MuiSelect-filled {
+  @apply rounded-2xl;
+}
+.MuiAlert-message {
+  @apply overflow-y-hidden;
+}
+.form-select {
+  @apply rounded-2xl bg-transparent border-black border-opacity-20 dark:text-white dark:!bg-dark border border-solid dark:border-white dark:border-opacity-20 before:!hidden after:!hidden;
+}
+.form-select .MuiSvgIcon-root {
+  @apply dark:text-white;
+}
+.form-select .MuiSelect-select {
+  @apply p-4;
+}
+
+.MuiFormLabel-root.MuiInputLabel-outlined {
+  @apply mt-0.5 sm:mt-auto;
+}
+.MuiFormLabel-root.MuiInputLabel-outlined.MuiFormLabel-filled {
+  @apply mt-1 sm:mt-auto;
+}
+.discount-code .MuiFormLabel-root.MuiInputLabel-outlined {
+  @apply mt-0 sm:mt-[-6px];
+}
+
+.custom-btn {
+  @apply !font-iransans h-fit font-semibold whitespace-nowrap;
+}
+.container-self {
+  @apply max-w-[70em] w-full mx-auto;
+}
+
+.custom-link {
+  @apply w-full px-1 cursor-pointer text-black dark:text-white;
+}
+.custom-card {
+  @apply bg-light-secondary-foreground shadow leading-loose py-1 px-7 dark:bg-dark-alt;
+}
+.orderbook.custom-card {
+  @apply bg-transparent shadow-none p-0 lg:bg-light-secondary-foreground lg:shadow leading-loose lg:py-1 lg:px-7 dark:lg:bg-dark-alt;
+}
+.custom-accordion {
+  @apply bg-light-secondary-foreground text-white shadow rounded-lg dark:bg-dark-alt;
+}
+.custom-accordion.disable.Mui-expanded {
+  @apply !m-0;
+}
+.custom-accordion .custom-accordion-text {
+  @apply small-1 text-black text-justify leading-loose dark:text-light-gray py-0 px-10;
+}
+.custom-accordion.Mui-disabled {
+  @apply bg-light-secondary-foreground shadow leading-loose 
+  /* border border-primary border-solid border-opacity-30  */
+  py-1 px-7 dark:bg-dark-alt;
+}
+.custom-accordion .MuiButtonBase-root.Mui-disabled {
+  @apply opacity-100;
+}
+
+.MuiButton-startIcon {
+  @apply m-0;
+}
+button:disabled text {
+  @apply invisible;
+}
+button:disabled text {
+  @apply invisible;
+}
+.MuiLoadingButton-loadingIndicator {
+  @apply dark:text-white;
+}
+
+.custom-box {
+  @apply w-full max-w-[22rem] bg-white border-2 border-solid border-black border-opacity-10 rounded-2xl p-7 dark:bg-dark dark:border-white;
+}
+.custom-timepicker div fieldset {
+  @apply border-none shadow-none outline-none;
+}
+
+.custom-verification-input .form-verification-input {
+  @apply !font-iransans flex justify-center items-center text-sm rounded-lg border border-black border-opacity-30 dark:text-white dark:bg-transparent dark:border-white dark:border-opacity-20;
+}
+
+.custom-alert {
+  @apply rounded-2xl;
+}
+.custom-alert.info {
+  @apply bg-alert-info bg-opacity-5 border border-alert-info-icon border-opacity-10 border-solid text-[#649dd0] dark:bg-alert-info dark:text-alert-info-foreground dark:border-alert-info;
+}
+.custom-alert.info .MuiAlert-icon {
+  @apply text-alert-info-icon;
+}
+.custom-alert.warning {
+  @apply bg-alert-warning bg-opacity-5 border border-primary-yellow border-opacity-10 border-solid text-alert-warning-icon dark:bg-alert-warning dark:text-alert-warning-foreground dark:border-alert-warning;
+}
+.custom-alert.warning .MuiAlert-icon {
+  @apply text-alert-warning-icon;
+}
+.custom-alert.error {
+  @apply bg-alert-error-icon bg-opacity-5 border border-alert-error-icon border-opacity-10 border-solid text-alert-error-icon dark:bg-alert-error dark:text-alert-error-foreground dark:border-alert-error;
+}
+.custom-alert.error .MuiAlert-icon {
+  @apply text-alert-error-icon;
+}
+.custom-alert.success {
+  @apply bg-primary-green bg-opacity-10 border border-primary-green border-opacity-10 border-solid text-primary-green dark:bg-primary-green dark:bg-opacity-10 dark:text-[#90ee90] dark:border-primary-green dark:border-opacity-5;
+}
+.custom-alert.success .MuiAlert-icon {
+  @apply text-primary-green dark:text-[#90ee90];
+}
+.custom-alert .MuiAlert-action {
+  @apply p-0;
+}
+.custom-alert.auth .MuiAlert-message {
+  @apply w-full p-0;
+}
+
+.modals {
+  @apply dark:text-white dark:bg-dark-alt rounded-2xl p-6 hidden lg:block;
+}
+
+.drawers {
+  @apply dark:text-white dark:bg-dark-alt rounded-t-2xl p-6 lg:hidden;
+}
+
+button {
+  @apply disabled:bg-primary-gray;
+}
+
+button:disabled text {
+  @apply invisible;
+}
+
+/* Badges */
+.badge {
+  @apply text-xs whitespace-nowrap;
+}
+.badge-primary {
+  @apply bg-primary bg-opacity-10 text-primary-yellow dark:text-primary border border-primary border-opacity-50;
+}
+.badge-info {
+  @apply bg-blue-500 bg-opacity-10 text-blue-500 dark:text-blue-500 border border-blue-500 border-opacity-50;
+}
+.badge-success {
+  @apply bg-primary-green bg-opacity-15 text-primary-green dark:text-green-400 border border-primary-green border-opacity-50;
+}
+.badge-error {
+  @apply bg-primary-red bg-opacity-10 text-primary-red border border-primary-red border-opacity-50;
+}
+
+html.dark .MuiButtonBase-root.MuiButton-textBlack,
+html.dark .MuiAccordionSummary-content {
+  @apply text-white;
+}
+
+.MuiInputBase-root span.input-end-span {
+  @apply dark:text-white;
+}
+.MuiInputBase-root.form-select.Mui-disabled {
+  @apply dark:!text-white;
+}
+.MuiSelect-select.MuiSelect-filled.Mui-disabled {
+  -webkit-text-fill-color: white;
+}
+
+.MuiPagination-ul {
+  @apply justify-center;
+}
+.MuiPaginationItem-circular,
+.MuiPaginationItem-circular svg {
+  @apply dark:!text-white;
+}
+
+.MuiPaginationItem-previousNext.Mui-disabled,
+.MuiPaginationItem-previousNext {
+  @apply !border-none !bg-transparent;
+}
+
+.MuiStepLabel-label {
+  @apply cursor-pointer dark:text-white;
+}
+.MuiStepLabel-label.Mui-active {
+  @apply text-primary text-base font-bold;
+}
+.MuiStepContent-root:has(*) {
+  @apply lg:h-fit lg:p-8 lg:rounded-3xl lg:shadow-[0px_0px_40px_0px_rgba(242,176,32,0.51)];
+}
+.MuiStepLabel-label.Mui-completed {
+  @apply dark:text-primary;
+}
+
+/* Calendar Styles */
+@media (max-width: 767px) {
+  .tether-element.tether-enabled {
+    @apply bg-dark bg-opacity-80 h-dvh !transform-none !pt-[50%] !fixed !top-0 rtl:!right-[calc(50%-190px)] ltr:!left-[calc(50%-190px)];
+  }
+}
+.tether-element.tether-enabled {
+  @apply lg:!top-16 rtl:lg:!left-[-10px] ltr:lg:!right-[-10px] !z-[13500];
+}
+.calendarContainer {
+  @apply !rounded-xl border border-solid border-white;
+}
+
+.react-dropdown-select {
+  @apply dark:bg-dark dark:border-[rgb(255,255,255,0.2)] rounded-2xl py-4;
+}
+.react-dropdown-select .react-dropdown-select-dropdown {
+  @apply dark:bg-dark dark:border-[rgb(255,255,255,0.2)] rounded-2xl;
+}
+.react-dropdown-select .react-dropdown-select-dropdown input {
+  @apply dark:bg-transparent dark:text-white dark:border-[rgb(255,255,255,0.2)];
+}
+.react-dropdown-select .react-dropdown-select-dropdown-handle {
+  @apply flex;
+}
+
+.rc-time-picker-panel {
+  @apply text-black !z-[14000];
+}
+
+.MuiBackdrop-root.MuiBackdrop-invisible.MuiModal-backdrop {
+  @apply bg-black bg-opacity-40;
+}
+
+.MuiSlider-root.gold .MuiSlider-valueLabel {
+  @apply bg-primary;
+}
+.MuiSlider-root.buy .MuiSlider-valueLabel {
+  @apply bg-primary-green;
+}
+.MuiSlider-root.sell .MuiSlider-valueLabel {
+  @apply bg-primary-red;
+}
+.MuiSlider-markLabel {
+  @apply dark:text-white;
+}
+.MuiSlider-root.gold.referral-reward .MuiSlider-markLabel {
+  @apply rtl:!right-[95%] ltr:!left-[95%];
+}
+
+.MuiClockNumber-root.Mui-selected {
+  @apply text-white;
+}
+
+.tradeables-collapse .MuiCollapse-wrapperInner {
+  @apply grid grid-cols-12 gap-x-4 gap-y-8;
+}
+
+.MuiPaper-root.MuiAlert-root {
+  @apply items-center;
+}
+
+.qrcode-container img {
+  @apply w-full h-full;
+}
+
+@tailwind utilities;
+
+/* Fonts */
+@import url("../public/assets/fonts/iransans/iransans-font.css");
+
+:where(:root) {
+  cursor: default;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
+  tab-size: 4;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-text-size-adjust: 100%;
+}
+
+* {
+  font-family: iransans, tahoma !important;
+  font-feature-settings: "ss02";
+}
+
+body {
+  font-family: iransans, tahoma !important;
+  font-feature-settings: "ss02";
+  direction: rtl;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: 100%;
+  font-weight: 400;
+  margin: 0;
+}
+
+/* Input Number */
+input[type="number"] {
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+@media (min-width: 1024px) {
+  /* Firefox */
+  @-moz-document url-prefix() {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #f6be44 transparent;
+    }
+  }
+
+  /* Chrome, Edge, and Safari */
+  *::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 5px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    @apply bg-primary;
+    border-radius: 14px;
+    border: 3px solid transparent;
+  }
+
+  /* Firefox */
+  #auth-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #f6be44 transparent;
+  }
+
+  /* Chrome, Edge, and Safari */
+  #auth-scroll::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+  }
+
+  #auth-scroll::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 0px;
+  }
+
+  #auth-scroll::-webkit-scrollbar-thumb {
+    @apply bg-primary;
+    border-radius: 14px;
+    border: 3px solid transparent;
+  }
+}
+
+/* Firefox */
+/* .custom-scroll div {
+  scrollbar-width: thin;
+  scrollbar-color: #ffc300 transparent;
+} */
+
+/* Chrome, Edge, and Safari */
+.custom-scroll div::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scroll div::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 5px;
+}
+
+.custom-scroll div::-webkit-scrollbar-thumb {
+  @apply bg-transparent;
+  border-radius: 14px;
+  border: 3px solid #ffc300;
+}
+
+.link-icon {
+  position: relative;
+  transition: all 0.15s !important;
+  inset-inline-start: 0.25em;
+}
+
+a:hover .link-icon {
+  inset-inline-start: 0.75rem;
+}
+
+.filter-icon {
+  filter: invert(0%) sepia(3%) saturate(0%) hue-rotate(213deg) brightness(92%)
+    contrast(104%);
+}
+
+html.dark .filter-icon {
+  filter: invert(50%) sepia(0%) saturate(159%) hue-rotate(335deg)
+    brightness(200%) contrast(92%);
+}
+
+.filter-icon-white {
+  filter: invert(100%) sepia(0%) saturate(7490%) hue-rotate(335deg)
+    brightness(110%) contrast(92%);
+}
+
+html.dark .filter-icon-white {
+  filter: invert(0%) sepia(3%) saturate(0%) hue-rotate(213deg) brightness(92%)
+    contrast(104%);
+}
+
+.svg-icon,
+.svgr {
+  display: inline-block;
+  fill: currentColor;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  transition: fill 0.2s cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+}
+
+.svg-icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  font-size: 1.5em;
+}
+
+@media only screen and (max-width: 640px) {
+  html {
+    font-size: 3.333333333333334vw;
+  }
+}
+
+@media only screen and (max-width: 1023px) {
+  main.panel-main {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+.puller {
+  width: 30px;
+  height: 6px;
+  @apply bg-[rgb(235,233,233)] dark:bg-[rgb(175,174,174)];
+  border-radius: 4px;
+  margin: 0 auto;
+}
+
+.large-0 {
+  font-size: 1em;
+}
+
+.large-1 {
+  font-size: 1.33em;
+}
+
+.large-2 {
+  font-size: 1.7689em;
+}
+
+.large-3 {
+  font-size: 2.352637em;
+}
+
+.large-4 {
+  font-size: 3.12900721em;
+}
+
+.large-5 {
+  font-size: 4.1615795893em;
+}
+
+.large-6 {
+  font-size: 5.5349008538em;
+}
+
+.large-7 {
+  font-size: 7.3614181355em;
+}
+
+.large-p5 {
+  font-size: 1.1532562595em;
+}
+
+.small-0 {
+  font-size: 1em;
+}
+
+.small-1 {
+  font-size: 0.9em;
+}
+
+.small-2 {
+  font-size: 0.81em;
+}
+
+.small-3 {
+  font-size: 0.729em;
+}
+
+.small-4 {
+  font-size: 0.6561em;
+}
+
+.small-5 {
+  font-size: 0.59049em;
+}
+
+.small-6 {
+  font-size: 0.531441em;
+}
+
+.small-7 {
+  font-size: 0.4782969em;
+}
+
+.stepper-active-card {
+  box-shadow: #003566 0px 0px 50px 1px;
+  border-radius: 1em;
+  padding: 1em;
+  @apply lg:shadow-none lg:rounded-none lg:p-0;
+}
+
+.ltr {
+  direction: ltr;
+}
+.rtl {
+  direction: rtl;
+}

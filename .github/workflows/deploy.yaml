@@ -1,0 +1,316 @@
+name: deploy-chabokan
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy_user1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for CHABOKAN_TOKEN_USER1
+        id: check_user1
+        run: |
+          if [ -z "${{ secrets.CHABOKAN_TOKEN_USER1 }}" ]; then
+            echo "Token not found for user1"
+            exit 1
+          else
+            echo "token_exists=true" >> $GITHUB_ENV
+          fi
+        continue-on-error: true
+      - name: update-chabokan-user1
+        if: env.token_exists == 'true'
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        if: env.token_exists == 'true'
+        uses: actions/setup-node@v1
+        with:
+          node-version: "18"
+      - name: Deploy for user1
+        if: env.token_exists == 'true'
+        env:
+          CHABOKAN_TOKEN: ${{ secrets.CHABOKAN_TOKEN_USER1 }}
+          PANEL_SERVICE_NAME: ${{ secrets.PANEL_SERVICE_NAME_USER1 }}
+        run: |
+          npm install -g @chabokan.net/cli
+          chabok login -t $CHABOKAN_TOKEN
+          chabok deploy -s $PANEL_SERVICE_NAME
+
+  deploy_user2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for CHABOKAN_TOKEN_USER2
+        id: check_user2
+        run: |
+          if [ -z "${{ secrets.CHABOKAN_TOKEN_USER2 }}" ]; then
+            echo "Token not found for user2"
+            exit 1
+          else
+            echo "token_exists=true" >> $GITHUB_ENV
+          fi
+        continue-on-error: true
+      - name: update-chabokan-user2
+        if: env.token_exists == 'true'
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        if: env.token_exists == 'true'
+        uses: actions/setup-node@v1
+        with:
+          node-version: "18"
+      - name: Deploy for user2
+        if: env.token_exists == 'true'
+        env:
+          CHABOKAN_TOKEN: ${{ secrets.CHABOKAN_TOKEN_USER2 }}
+          PANEL_SERVICE_NAME: ${{ secrets.PANEL_SERVICE_NAME_USER2 }}
+        run: |
+          npm install -g @chabokan.net/cli
+          chabok login -t $CHABOKAN_TOKEN
+          chabok deploy -s $PANEL_SERVICE_NAME
+
+  deploy_user3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for CHABOKAN_TOKEN_USER3
+        id: check_user3
+        run: |
+          if [ -z "${{ secrets.CHABOKAN_TOKEN_USER3 }}" ]; then
+            echo "Token not found for user3"
+            exit 1
+          else
+            echo "token_exists=true" >> $GITHUB_ENV
+          fi
+        continue-on-error: true
+      - name: update-chabokan-user3
+        if: env.token_exists == 'true'
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        if: env.token_exists == 'true'
+        uses: actions/setup-node@v1
+        with:
+          node-version: "18"
+      - name: Deploy for user3
+        if: env.token_exists == 'true'
+        env:
+          CHABOKAN_TOKEN: ${{ secrets.CHABOKAN_TOKEN_USER3 }}
+          PANEL_SERVICE_NAME: ${{ secrets.PANEL_SERVICE_NAME_USER3 }}
+        run: |
+          npm install -g @chabokan.net/cli
+          chabok login -t $CHABOKAN_TOKEN
+          chabok deploy -s $PANEL_SERVICE_NAME
+
+  deploy_user4:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for CHABOKAN_TOKEN_USER4
+        id: check_user4
+        run: |
+          if [ -z "${{ secrets.CHABOKAN_TOKEN_USER4 }}" ]; then
+            echo "Token not found for user4"
+            exit 1
+          else
+            echo "token_exists=true" >> $GITHUB_ENV
+          fi
+        continue-on-error: true
+      - name: update-chabokan-user4
+        if: env.token_exists == 'true'
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        if: env.token_exists == 'true'
+        uses: actions/setup-node@v1
+        with:
+          node-version: "18"
+      - name: Deploy for user4
+        if: env.token_exists == 'true'
+        env:
+          CHABOKAN_TOKEN: ${{ secrets.CHABOKAN_TOKEN_USER4 }}
+          PANEL_SERVICE_NAME: ${{ secrets.PANEL_SERVICE_NAME_USER4 }}
+        run: |
+          npm install -g @chabokan.net/cli
+          chabok login -t $CHABOKAN_TOKEN
+          chabok deploy -s $PANEL_SERVICE_NAME
+
+  deploy_user5:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for CHABOKAN_TOKEN_USER5
+        id: check_user5
+        run: |
+          if [ -z "${{ secrets.CHABOKAN_TOKEN_USER5 }}" ]; then
+            echo "Token not found for user5"
+            exit 1
+          else
+            echo "token_exists=true" >> $GITHUB_ENV
+          fi
+        continue-on-error: true
+      - name: update-chabokan-user5
+        if: env.token_exists == 'true'
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        if: env.token_exists == 'true'
+        uses: actions/setup-node@v1
+        with:
+          node-version: "18"
+      - name: Deploy for user5
+        if: env.token_exists == 'true'
+        env:
+          CHABOKAN_TOKEN: ${{ secrets.CHABOKAN_TOKEN_USER5 }}
+          PANEL_SERVICE_NAME: ${{ secrets.PANEL_SERVICE_NAME_USER5 }}
+        run: |
+          npm install -g @chabokan.net/cli
+          chabok login -t $CHABOKAN_TOKEN
+          chabok deploy -s $PANEL_SERVICE_NAME
+
+  deploy_user6:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for CHABOKAN_TOKEN_USER6
+        id: check_user6
+        run: |
+          if [ -z "${{ secrets.CHABOKAN_TOKEN_USER6 }}" ]; then
+            echo "Token not found for user6"
+            exit 1
+          else
+            echo "token_exists=true" >> $GITHUB_ENV
+          fi
+        continue-on-error: true
+      - name: update-chabokan-user6
+        if: env.token_exists == 'true'
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        if: env.token_exists == 'true'
+        uses: actions/setup-node@v1
+        with:
+          node-version: "18"
+      - name: Deploy for user6
+        if: env.token_exists == 'true'
+        env:
+          CHABOKAN_TOKEN: ${{ secrets.CHABOKAN_TOKEN_USER6 }}
+          PANEL_SERVICE_NAME: ${{ secrets.PANEL_SERVICE_NAME_USER6 }}
+        run: |
+          npm install -g @chabokan.net/cli
+          chabok login -t $CHABOKAN_TOKEN
+          chabok deploy -s $PANEL_SERVICE_NAME
+
+  deploy_user7:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for CHABOKAN_TOKEN_USER7
+        id: check_user7
+        run: |
+          if [ -z "${{ secrets.CHABOKAN_TOKEN_USER7 }}" ]; then
+            echo "Token not found for user7"
+            exit 1
+          else
+            echo "token_exists=true" >> $GITHUB_ENV
+          fi
+        continue-on-error: true
+      - name: update-chabokan-user7
+        if: env.token_exists == 'true'
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        if: env.token_exists == 'true'
+        uses: actions/setup-node@v1
+        with:
+          node-version: "18"
+      - name: Deploy for user7
+        if: env.token_exists == 'true'
+        env:
+          CHABOKAN_TOKEN: ${{ secrets.CHABOKAN_TOKEN_USER7 }}
+          PANEL_SERVICE_NAME: ${{ secrets.PANEL_SERVICE_NAME_USER7 }}
+        run: |
+          npm install -g @chabokan.net/cli
+          chabok login -t $CHABOKAN_TOKEN
+          chabok deploy -s $PANEL_SERVICE_NAME
+
+  deploy_user8:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for CHABOKAN_TOKEN_USER8
+        id: check_user8
+        run: |
+          if [ -z "${{ secrets.CHABOKAN_TOKEN_USER8 }}" ]; then
+            echo "Token not found for user8"
+            exit 1
+          else
+            echo "token_exists=true" >> $GITHUB_ENV
+          fi
+        continue-on-error: true
+      - name: update-chabokan-user8
+        if: env.token_exists == 'true'
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        if: env.token_exists == 'true'
+        uses: actions/setup-node@v1
+        with:
+          node-version: "18"
+      - name: Deploy for user8
+        if: env.token_exists == 'true'
+        env:
+          CHABOKAN_TOKEN: ${{ secrets.CHABOKAN_TOKEN_USER8 }}
+          PANEL_SERVICE_NAME: ${{ secrets.PANEL_SERVICE_NAME_USER8 }}
+        run: |
+          npm install -g @chabokan.net/cli
+          chabok login -t $CHABOKAN_TOKEN
+          chabok deploy -s $PANEL_SERVICE_NAME
+
+  deploy_user9:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for CHABOKAN_TOKEN_USER9
+        id: check_user9
+        run: |
+          if [ -z "${{ secrets.CHABOKAN_TOKEN_USER9 }}" ]; then
+            echo "Token not found for user9"
+            exit 1
+          else
+            echo "token_exists=true" >> $GITHUB_ENV
+          fi
+        continue-on-error: true
+      - name: update-chabokan-user9
+        if: env.token_exists == 'true'
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        if: env.token_exists == 'true'
+        uses: actions/setup-node@v1
+        with:
+          node-version: "18"
+      - name: Deploy for user9
+        if: env.token_exists == 'true'
+        env:
+          CHABOKAN_TOKEN: ${{ secrets.CHABOKAN_TOKEN_USER9 }}
+          PANEL_SERVICE_NAME: ${{ secrets.PANEL_SERVICE_NAME_USER9 }}
+        run: |
+          npm install -g @chabokan.net/cli
+          chabok login -t $CHABOKAN_TOKEN
+          chabok deploy -s $PANEL_SERVICE_NAME
+
+  deploy_user10:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for CHABOKAN_TOKEN_USER10
+        id: check_user10
+        run: |
+          if [ -z "${{ secrets.CHABOKAN_TOKEN_USER10 }}" ]; then
+            echo "Token not found for user10"
+            exit 1
+          else
+            echo "token_exists=true" >> $GITHUB_ENV
+          fi
+        continue-on-error: true
+      - name: update-chabokan-user10
+        if: env.token_exists == 'true'
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        if: env.token_exists == 'true'
+        uses: actions/setup-node@v1
+        with:
+          node-version: "18"
+      - name: Deploy for user10
+        if: env.token_exists == 'true'
+        env:
+          CHABOKAN_TOKEN: ${{ secrets.CHABOKAN_TOKEN_USER10 }}
+          PANEL_SERVICE_NAME: ${{ secrets.PANEL_SERVICE_NAME_USER10 }}
+        run: |
+          npm install -g @chabokan.net/cli
+          chabok login -t $CHABOKAN_TOKEN
+          chabok deploy -s $PANEL_SERVICE_NAME

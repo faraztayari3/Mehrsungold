@@ -1,0 +1,20 @@
+@font-face {
+  font-family: VazirmatnVF;
+  src: url("./fonts/vazirmatn.ttf") format("true-type");
+  /* for the other supporting browsers */
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: vazirmatn;
+  font-style: normal;
+  font-weight: normal;
+  src: url("./staticfonts/vazirmatn-regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: vazirmatn;
+  font-style: normal;
+  font-weight: 700;
+  src: url("./staticfonts/vazirmatn-bold.woff2") format("woff2");
+}

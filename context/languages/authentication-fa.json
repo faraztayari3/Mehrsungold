@@ -1,0 +1,70 @@
+{
+    "Dir": "rtl",
+    "Seo": {
+        "SiteName": "",
+        "Brand": "بیتنال"
+    },
+    "Global": {
+        "Success": "با موفقیت انجام شد",
+        "Welcome": "با موفقیت وارد شدید"
+    },
+    "Auth": {
+        "Title": "ورود | ثبت نام",
+        "description": "",
+        "keywords": "",
+        "pageUrl": "",
+        "metaIndex": ""
+    },
+    "AdminAuth": {
+        "Title": "ورود به پنل مدیریت",
+        "description": "",
+        "keywords": "",
+        "pageUrl": "",
+        "metaIndex": ""
+    },
+    "Forgot": {
+        "Title": "بازنشانی رمز عبور",
+        "description": "",
+        "keywords": "",
+        "pageUrl": "",
+        "metaIndex": ""
+    },
+    "Not_found": {
+        "Message": "صفحه ای که دنبالش هستی وجود نداره",
+        "SubMessage": "ممکن است آدرس را اشتباه تایپ کرده باشید یا صفحه جابجا شده باشد.",
+        "Title": "صفحه پیدا نشد",
+        "BackToHome": "بازگشت به صفحه اصلی",
+        "description": "",
+        "keywords": "",
+        "pageUrl": "",
+        "metaIndex": ""
+    },
+    "Error": {
+        "Message": "متاسفانه مشکلی پیش آمده است",
+        "Title": "متاسفانه مشکلی پیش آمده است",
+        "BackToHome": "بازگشت به صفحه اصلی",
+        "description": "",
+        "keywords": "",
+        "pageUrl": "",
+        "metaIndex": ""
+    },
+    "Payment": {
+        "MessageRejected": "تراکنش ناموفق",
+        "MessageSuccess": "تراکنش موفق",
+        "SubMessageRejected": "تراکنش شما موفقیت آمیز نبود",
+        "SubMessageSuccess": "تراکنش شما موفقیت آمیز بود",
+        "BackToWallets": "بازگشت به کیف پول",
+        "Title": "نتیجه پرداخت",
+        "description": "",
+        "keywords": "",
+        "pageUrl": "",
+        "metaIndex": ""
+    },
+    "Verification": {
+        "Title": "صفحه تائیدیه",
+        "description": "",
+        "keywords": "",
+        "pageUrl": "",
+        "metaIndex": ""
+    }
+}
