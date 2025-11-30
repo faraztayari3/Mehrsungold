@@ -174,15 +174,13 @@ const UsersPageCompo = (props) => {
         });
     }
 
-    // Toggle sort on 'tomanBalance' column
-    const toggleSortByToman = () => {
-        // if already sorting by tomanBalance flip order, otherwise start with descending (1)
-        if (sortBy === 'tomanBalance') {
+    // Generic toggle sort for any backend field
+    const toggleSortBy = (fieldName, defaultOrder = 1) => {
+        if (sortBy === fieldName) {
             setSortOrder(prev => 1 - prev);
         } else {
-            setSortBy('tomanBalance');
-            // default to descending so highest balances appear first
-            setSortOrder(1);
+            setSortBy(fieldName);
+            setSortOrder(defaultOrder);
         }
         // reload users from first page with new sort
         setPageItem(1);
@@ -587,27 +585,56 @@ const UsersPageCompo = (props) => {
                         <Table sx={{ minWidth: 650 }} aria-label="simple table" className="rounded-xl border-separate border-spacing-y-2">
                             <TableHead className="dark:bg-dark">
                                 <TableRow>
-                                    {tabValue == 0 ? USERS_TABLE_HEAD.map((data, index) => (
-                                        <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-end pb-4`} key={index}>
-                                            {index === 2 ? (
-                                                <div onClick={toggleSortByToman} role="button" className="flex items-center gap-x-2 cursor-pointer select-none">
-                                                    <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
-                                                    <div className="flex items-center">
-                                                        {sortBy === 'tomanBalance' ? (
-                                                            sortOrder == 1 ? <ArrowDownwardIcon fontSize="small" className="text-primary" /> : <ArrowUpwardIcon fontSize="small" className="text-primary" />
-                                                        ) : <ArrowDownwardIcon fontSize="small" className="opacity-30" />}
+                                    {tabValue == 0 ? USERS_TABLE_HEAD.map((data, index) => {
+                                        const sortableMap = {
+                                            2: 'tomanBalance',
+                                            3: 'createdAt',
+                                            4: 'role',
+                                            5: 'verificationStatus'
+                                        };
+                                        const field = sortableMap[index];
+                                        return (
+                                            <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-end pb-4`} key={index}>
+                                                {field ? (
+                                                    <div onClick={() => toggleSortBy(field, 1)} role="button" className="flex items-center gap-x-2 cursor-pointer select-none">
+                                                        <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                                        <div className="flex items-center">
+                                                            {sortBy === field ? (
+                                                                sortOrder == 1 ? <ArrowDownwardIcon fontSize="small" className="text-primary" /> : <ArrowUpwardIcon fontSize="small" className="text-primary" />
+                                                            ) : <ArrowDownwardIcon fontSize="small" className="opacity-30" />}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ) : (
-                                                <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
-                                            )}
-                                        </TableCell>
-                                    )) : ''}
-                                    {tabValue == 1 ? PENDING_USERS_TABLE_HEAD.map((data, index) => (
-                                        <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-end pb-4`} key={index}>
-                                            <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
-                                        </TableCell>
-                                    )) : ''}
+                                                ) : (
+                                                    <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                                )}
+                                            </TableCell>
+                                        )
+                                    }) : ''}
+                                    {tabValue == 1 ? PENDING_USERS_TABLE_HEAD.map((data, index) => {
+                                        // pending head indices: 4 -> createdAt, 5 -> role, 6 -> verificationStatus
+                                        const pendingSortableMap = {
+                                            4: 'createdAt',
+                                            5: 'role',
+                                            6: 'verificationStatus'
+                                        };
+                                        const field = pendingSortableMap[index];
+                                        return (
+                                            <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-end pb-4`} key={index}>
+                                                {field ? (
+                                                    <div onClick={() => toggleSortBy(field, 1)} role="button" className="flex items-center gap-x-2 cursor-pointer select-none">
+                                                        <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                                        <div className="flex items-center">
+                                                            {sortBy === field ? (
+                                                                sortOrder == 1 ? <ArrowDownwardIcon fontSize="small" className="text-primary" /> : <ArrowUpwardIcon fontSize="small" className="text-primary" />
+                                                            ) : <ArrowDownwardIcon fontSize="small" className="opacity-30" />}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                                )}
+                                            </TableCell>
+                                        )
+                                    }) : ''}
                                 </TableRow>
                             </TableHead>
                             <TableBody>
