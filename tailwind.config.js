@@ -67,7 +67,7 @@ module.exports = {
         // #000814 black
         'primary': '#ffc300',
         'gold': '#ffd60a',
-        'dark': '#555555ff',
+        'dark': '#001413ff',
         'dark-alt': '#012f38',
         'dark-secondary': '#067470c7',
         'secondary-primary': '#fcaf17',
