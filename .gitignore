@@ -1,4 +1,15 @@
 node_modules/
 .next/
 .env
+.env.local
+.env*.local
 dist/
+
+# Local development files
+*.local.md
+README.local.md
+
+# Service worker auto-generated files
+public/service-worker.js.map
+public/workbox-*.js
+public/workbox-*.js.map
