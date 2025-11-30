@@ -22,6 +22,8 @@ import CancelIcon from '@mui/icons-material/CancelOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircleOutline'
 import IconButton from '@mui/material/IconButton';
 import Divider from '@mui/material/Divider';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import Tooltip from '@mui/material/Tooltip';
@@ -142,6 +144,9 @@ const UsersPageCompo = (props) => {
     ]
 
     const [pageItem, setPageItem] = useState(1);
+    // Sorting state: sortBy matches backend field name, sortOrder: 0 or 1 (backend expects numeric)
+    const [sortBy, setSortBy] = useState('createdAt');
+    const [sortOrder, setSortOrder] = useState(0);
     const [firstLoading, setFirstLoading] = useState(true);
     useEffect(() => {
         getUsers(1, '');
@@ -157,7 +162,7 @@ const UsersPageCompo = (props) => {
     const [usersTotal, setUsersTotal] = useState(0);
     const getUsers = (page, status, search) => {
         setLoadingUsers(true);
-        ApiCall('/user', 'GET', locale, {}, `${search ? `search=${search}&` : ''}${status ? `verificationStatus=PendingFirstLevel&verificationStatus=PendingSecondLevel&` : ''}roles=User&roles=VIPUser&sortOrder=0&sortBy=createdAt&limit=${usersLimit}&skip=${(page * usersLimit) - usersLimit}`, 'admin', router).then(async (result) => {
+        ApiCall('/user', 'GET', locale, {}, `${search ? `search=${search}&` : ''}${status ? `verificationStatus=PendingFirstLevel&verificationStatus=PendingSecondLevel&` : ''}roles=User&roles=VIPUser&sortOrder=${sortOrder}&sortBy=${sortBy}&limit=${usersLimit}&skip=${(page * usersLimit) - usersLimit}`, 'admin', router).then(async (result) => {
             setUsersTotal(result.count);
             setUsers(result.data);
             setLoadingUsers(false);
@@ -167,6 +172,28 @@ const UsersPageCompo = (props) => {
             setFirstLoading(false);
             console.log(error);
         });
+    }
+
+    // Toggle sort on 'tomanBalance' column
+    const toggleSortByToman = () => {
+        // if already sorting by tomanBalance flip order, otherwise start with descending (1)
+        if (sortBy === 'tomanBalance') {
+            setSortOrder(prev => 1 - prev);
+        } else {
+            setSortBy('tomanBalance');
+            // default to descending so highest balances appear first
+            setSortOrder(1);
+        }
+        // reload users from first page with new sort
+        setPageItem(1);
+        // give state a tick, then call getUsers using updated state in next tick
+        setTimeout(() => {
+            if (tabValue == 0) {
+                getUsers(1, '');
+            } else {
+                getUsers(1, 'pendings');
+            }
+        }, 0);
     }
 
     const [tabValue, setTabValue] = useState(0);
@@ -562,7 +589,18 @@ const UsersPageCompo = (props) => {
                                 <TableRow>
                                     {tabValue == 0 ? USERS_TABLE_HEAD.map((data, index) => (
                                         <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-end pb-4`} key={index}>
-                                            <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                            {index === 2 ? (
+                                                <div onClick={toggleSortByToman} role="button" className="flex items-center gap-x-2 cursor-pointer select-none">
+                                                    <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                                    <div className="flex items-center">
+                                                        {sortBy === 'tomanBalance' ? (
+                                                            sortOrder == 1 ? <ArrowDownwardIcon fontSize="small" className="text-primary" /> : <ArrowUpwardIcon fontSize="small" className="text-primary" />
+                                                        ) : <ArrowDownwardIcon fontSize="small" className="opacity-30" />}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                            )}
                                         </TableCell>
                                     )) : ''}
                                     {tabValue == 1 ? PENDING_USERS_TABLE_HEAD.map((data, index) => (
