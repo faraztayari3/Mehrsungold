@@ -22,8 +22,12 @@ const ApiCall = (url, method, locale, body, query, token, router, formData) => {
     let authToken = token === 'user' ? cookies.userToken : cookies.adminToken;
 
     let result = new Promise(async (resolve, reject) => {
+        // Check if URL is absolute (starts with http:// or https://)
+        const isAbsoluteUrl = url.startsWith('http://') || url.startsWith('https://');
+        const finalUrl = isAbsoluteUrl ? url : `${process.env.NEXT_PUBLIC_BASEURL}${url}`;
+        
         if (method == 'GET' || method == 'DELETE') {
-            response = await fetch(`${process.env.NEXT_PUBLIC_BASEURL}${url}?${query ? `${query}` : ''}`, {
+            response = await fetch(`${finalUrl}?${query ? `${query}` : ''}`, {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
@@ -50,13 +54,13 @@ const ApiCall = (url, method, locale, body, query, token, router, formData) => {
                 console.log(error);
                 reject(error);
             });
-        } else if (method == 'POST' || method == 'PATCH') {
+        } else if (method == 'POST' || method == 'PATCH' || method == 'PUT') {
             let customBody = formData ? body : JSON.stringify(body);
             let customHeaders = formData ? { 'Authorization': `Bearer ${authToken}` } : {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken}`
             };
-            response = await fetch(`${process.env.NEXT_PUBLIC_BASEURL}${url}?${query ? `${query}` : ''}`, {
+            response = await fetch(`${finalUrl}?${query ? `${query}` : ''}`, {
                 method,
                 headers: customHeaders,
                 body: customBody

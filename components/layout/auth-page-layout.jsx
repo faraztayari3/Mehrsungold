@@ -40,7 +40,7 @@ const AuthPageLayout = ({ children }) => {
                                             <img crossOrigin="anonymous" src={`${process.env.NEXT_PUBLIC_BASEURL}${darkModeToggle ? siteInfo?.darkLogoImage : siteInfo?.lightLogoImage}`} className="svgr lg:w-[7rem] h-10 lg:h-[5rem] text-black dark:text-white" />
                                         </Link>
                                     </LinkRouter>
-                                    <span className="hidden lg:block text-center" r /></span>
+                                    <span className="hidden lg:block text-center">با هر مبلغی بدون پرداخت اجرت و مالیات، فلزات گرانبها <br />بخرید و بفروشید و در هر زمان تحویل بگیرید.</span>
                                 </div>
                                 <img src="/assets/img/svg/auth-svg.svg" alt="auth-svg" className="h-80 hidden lg:block absolute bottom-0 right-[80%] w-52" />
                             </div>

@@ -942,6 +942,19 @@ const UserSinglePageCompo = (props) => {
                                         .locale('fa')
                                         .format('jYYYY/jMM/jDD')}</span>
                                 </div>
+                                {userInfo?.referrer && (userInfo?.referrer?.firstName || userInfo?.referrer?.mobileNumber) ? (
+                                    <div className="flex items-center justify-between gap-x-8">
+                                        <span>معرف:</span>
+                                        <div className="flex items-center gap-x-2 dark:text-white">
+                                            {userInfo?.referrer?.firstName && userInfo?.referrer?.lastName ? (
+                                                <span>{`${userInfo?.referrer?.firstName} ${userInfo?.referrer?.lastName}`}</span>
+                                            ) : null}
+                                            {userInfo?.referrer?.mobileNumber ? (
+                                                <PatternFormat displayType="text" value={userInfo?.referrer?.mobileNumber} format="#### ### ## ##" dir="ltr" />
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                ) : null}
                                 <div className="flex items-center justify-between gap-x-8">
                                     <span>تعداد نفرات دعوت شده:</span>
                                     <span>{(userInfo?.referralCount || 0)} نفر</span>

@@ -31,6 +31,7 @@ const AdminIndexPageCompo = (props) => {
         getNewUsersInfo();
         getUsers();
         getPendingUsers();
+        getWeeklyMetals();
     }, []);
 
     /**
@@ -90,8 +91,25 @@ const AdminIndexPageCompo = (props) => {
         });
     }
 
+    /**
+        * Retrieves Weekly Metals Info (Gold & Silver).
+        * @returns None
+       */
+    const [weeklyMetals, setWeeklyMetals] = useState();
+    const [loadingWeeklyMetals, setLoadingWeeklyMetals] = useState(true);
+    const getWeeklyMetals = () => {
+        setLoadingWeeklyMetals(true);
+        ApiCall('http://localhost:3004/dashboard/weekly-metals', 'GET', locale, {}, ``, 'admin', router).then(async (result) => {
+            setWeeklyMetals(result);
+            setLoadingWeeklyMetals(false);
+        }).catch((error) => {
+            setLoadingWeeklyMetals(false);
+            console.log(error);
+        });
+    }
+
     return (
-        loadingdDashboardInfo || loadingdNewUsersInfo ? <div className="flex justify-center items-center mt-16"><CircularProgress color={darkModeToggle ? 'white' : 'black'} /></div> :
+        loadingdDashboardInfo || loadingdNewUsersInfo || loadingWeeklyMetals ? <div className="flex justify-center items-center mt-16"><CircularProgress color={darkModeToggle ? 'white' : 'black'} /></div> :
             <div className="xl:max-w-[60rem] xl:mx-auto">
                 <section>
                     <h1 className="text-large-3 mb-6">داشبورد</h1>
@@ -156,6 +174,54 @@ const AdminIndexPageCompo = (props) => {
                                 </div>
                                 <LinkRouter legacyBehavior href="/admin/panel/trades">
                                     <Button href="/admin/panel/trades" variant="contained" color="success" size="small" className="custom-btn text-black rounded-lg w-full lg:mx-auto"
+                                        startIcon={<svg viewBox="0 0 24 24" className="svg-icon text-2xl">
+                                            <path d="M8.24 1.744a6.504 6.504 0 0 0-6.494 6.494.749.749 0 0 0 1.498 0 5 5 0 0 1 3.609-4.801l-.611 1.092a.75.75 0 1 0 1.307.729L8.893 2.86a.75.75 0 0 0-.652-1.115zm6.492 1.484c-3.145 0-5.746 2.42-6.035 5.492-3.067.294-5.48 2.892-5.48 6.033 0 3.337 2.725 6.063 6.062 6.063 3.144 0 5.741-2.419 6.031-5.49 3.068-.294 5.484-2.893 5.484-6.035 0-3.337-2.725-6.062-6.062-6.062zm-5.453 7.465c.085 0 .183.008.314.016a4.056 4.056 0 0 1 3.738 3.738c.002.12.007.23.007.306a4.044 4.044 0 0 1-4.06 4.064 4.047 4.047 0 0 1-4.065-4.064 4.044 4.044 0 0 1 4.064-4.06zm12.23 4.32a.75.75 0 0 0-.748.748 5 5 0 0 1-3.61 4.801l.612-1.092a.75.75 0 1 0-1.307-.73l-1.344 2.4a.75.75 0 0 0 .652 1.114 6.504 6.504 0 0 0 6.494-6.494.749.749 0 0 0-.75-.748z"></path>
+                                        </svg>}>
+                                        <span className="text-large-1 mx-2">معاملات</span>
+                                    </Button>
+                                </LinkRouter>
+                            </div>
+                        </div>
+                        <div className="col-span-12 md:col-span-4">
+                            <div className="h-full custom-card flex flex-col justify-between rounded-2xl p-5">
+                                <div className="flex flex-col gap-y-1">
+                                    <span className="font-bold">طلای معامله شده (هفته):</span>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-green-600">خرید:</span>
+                                        <span className="ltr">{(parseFloat(weeklyMetals?.gold?.buy?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))} گرم</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-red-600">فروش:</span>
+                                        <span className="ltr">{(parseFloat(weeklyMetals?.gold?.sell?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))} گرم</span>
+                                    </div>
+                                    <div className="text-large-1 self-end mt-2"><span className="block text-primary-gold"><span className="ltr">{(parseFloat(weeklyMetals?.gold?.total?.milligrams || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }))}</span> میلی‌گرم</span></div>
+                                </div>
+                                <LinkRouter legacyBehavior href="/admin/panel/trades">
+                                    <Button href="/admin/panel/trades" variant="contained" color="warning" size="small" className="custom-btn text-black rounded-lg w-full lg:mx-auto"
+                                        startIcon={<svg viewBox="0 0 24 24" className="svg-icon text-2xl">
+                                            <path d="M8.24 1.744a6.504 6.504 0 0 0-6.494 6.494.749.749 0 0 0 1.498 0 5 5 0 0 1 3.609-4.801l-.611 1.092a.75.75 0 1 0 1.307.729L8.893 2.86a.75.75 0 0 0-.652-1.115zm6.492 1.484c-3.145 0-5.746 2.42-6.035 5.492-3.067.294-5.48 2.892-5.48 6.033 0 3.337 2.725 6.063 6.062 6.063 3.144 0 5.741-2.419 6.031-5.49 3.068-.294 5.484-2.893 5.484-6.035 0-3.337-2.725-6.062-6.062-6.062zm-5.453 7.465c.085 0 .183.008.314.016a4.056 4.056 0 0 1 3.738 3.738c.002.12.007.23.007.306a4.044 4.044 0 0 1-4.06 4.064 4.047 4.047 0 0 1-4.065-4.064 4.044 4.044 0 0 1 4.064-4.06zm12.23 4.32a.75.75 0 0 0-.748.748 5 5 0 0 1-3.61 4.801l.612-1.092a.75.75 0 1 0-1.307-.73l-1.344 2.4a.75.75 0 0 0 .652 1.114 6.504 6.504 0 0 0 6.494-6.494.749.749 0 0 0-.75-.748z"></path>
+                                        </svg>}>
+                                        <span className="text-large-1 mx-2">معاملات</span>
+                                    </Button>
+                                </LinkRouter>
+                            </div>
+                        </div>
+                        <div className="col-span-12 md:col-span-4">
+                            <div className="h-full custom-card flex flex-col justify-between rounded-2xl p-5">
+                                <div className="flex flex-col gap-y-1">
+                                    <span className="font-bold">نقره معامله شده (هفته):</span>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-green-600">خرید:</span>
+                                        <span className="ltr">{(parseFloat(weeklyMetals?.silver?.buy?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))} گرم</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-red-600">فروش:</span>
+                                        <span className="ltr">{(parseFloat(weeklyMetals?.silver?.sell?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))} گرم</span>
+                                    </div>
+                                    <div className="text-large-1 self-end mt-2"><span className="block text-gray-400"><span className="ltr">{(parseFloat(weeklyMetals?.silver?.total?.milligrams || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }))}</span> میلی‌گرم</span></div>
+                                </div>
+                                <LinkRouter legacyBehavior href="/admin/panel/trades">
+                                    <Button href="/admin/panel/trades" variant="contained" color="inherit" size="small" className="custom-btn text-black rounded-lg w-full lg:mx-auto"
                                         startIcon={<svg viewBox="0 0 24 24" className="svg-icon text-2xl">
                                             <path d="M8.24 1.744a6.504 6.504 0 0 0-6.494 6.494.749.749 0 0 0 1.498 0 5 5 0 0 1 3.609-4.801l-.611 1.092a.75.75 0 1 0 1.307.729L8.893 2.86a.75.75 0 0 0-.652-1.115zm6.492 1.484c-3.145 0-5.746 2.42-6.035 5.492-3.067.294-5.48 2.892-5.48 6.033 0 3.337 2.725 6.063 6.062 6.063 3.144 0 5.741-2.419 6.031-5.49 3.068-.294 5.484-2.893 5.484-6.035 0-3.337-2.725-6.062-6.062-6.062zm-5.453 7.465c.085 0 .183.008.314.016a4.056 4.056 0 0 1 3.738 3.738c.002.12.007.23.007.306a4.044 4.044 0 0 1-4.06 4.064 4.047 4.047 0 0 1-4.065-4.064 4.044 4.044 0 0 1 4.064-4.06zm12.23 4.32a.75.75 0 0 0-.748.748 5 5 0 0 1-3.61 4.801l.612-1.092a.75.75 0 1 0-1.307-.73l-1.344 2.4a.75.75 0 0 0 .652 1.114 6.504 6.504 0 0 0 6.494-6.494.749.749 0 0 0-.75-.748z"></path>
                                         </svg>}>
