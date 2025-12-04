@@ -131,7 +131,8 @@ const SMSPageCompo = () => {
     const getSmsSettings = async () => {
         setFirstLoading(true)
         try {
-            const res = await ApiCall('http://localhost:3004/settings/sms', 'GET', locale, {}, '', 'admin', router, true)
+            const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL || process.env.NEXT_PUBLIC_BASEURL;
+            const res = await ApiCall(`${dashboardUrl}/settings/sms`, 'GET', locale, {}, '', 'admin', router, true)
             if (res?.data) {
                 setSmsSettings(res.data)
             }
@@ -192,7 +193,8 @@ const SMSPageCompo = () => {
         setLoading(true)
         try {
             console.log('Saving SMS settings:', JSON.stringify(smsSettings, null, 2))
-            const res = await ApiCall('http://localhost:3004/settings/sms', 'PUT', locale, smsSettings, '', 'admin', router, true)
+            const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL || process.env.NEXT_PUBLIC_BASEURL;
+            const res = await ApiCall(`${dashboardUrl}/settings/sms`, 'PUT', locale, smsSettings, '', 'admin', router, true)
             console.log('Save response:', res)
             // Check for both statusCode and message
             if (res?.statusCode === 200 || res?.statusCode === 201 || res?.message) {
