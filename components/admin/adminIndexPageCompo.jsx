@@ -99,7 +99,8 @@ const AdminIndexPageCompo = (props) => {
     const [loadingWeeklyMetals, setLoadingWeeklyMetals] = useState(true);
     const getWeeklyMetals = () => {
         setLoadingWeeklyMetals(true);
-        ApiCall('/dashboard/weekly-metals', 'GET', locale, {}, ``, 'admin', router).then(async (result) => {
+        const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL || process.env.NEXT_PUBLIC_BASEURL;
+        ApiCall(`${dashboardUrl}/dashboard/weekly-metals`, 'GET', locale, {}, ``, 'admin', router).then(async (result) => {
             setWeeklyMetals(result);
             setLoadingWeeklyMetals(false);
         }).catch((error) => {
