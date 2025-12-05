@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import LinkRouter from "next/link"
 import { useRouter } from 'next/router'
 import Dialog from '@mui/material/Dialog'
+import Button from '@mui/material/Button'
 import FormControl from '@mui/material/FormControl'
 import TextField from '@mui/material/TextField'
 import IconButton from '@mui/material/IconButton'
@@ -173,6 +174,9 @@ const FiatTransationsPageCompo = (props) => {
     const [loadingTransactions, setLoadingTransactions] = useState(true);
     const [transactionsLimit, settransactionsLimit] = useState(10);
     const [transactionsTotal, setTransactionsTotal] = useState(0);
+    const [openExportDialog, setOpenExportDialog] = useState(false);
+    const [exportDays, setExportDays] = useState(7);
+    const [exporting, setExporting] = useState(false);
     const getTransactions = (type, search) => {
         setLoadingTransactions(true);
         ApiCall('/balance-transaction', 'GET', locale, {}, `${search ? `search=${search}&` : ''}sortOrder=0&sortBy=createdAt&type=${type}&limit=${transactionsLimit}&skip=${(pageItem * transactionsLimit) - transactionsLimit}`, 'admin', router).then(async (result) => {
@@ -344,6 +348,126 @@ const FiatTransationsPageCompo = (props) => {
         }
     }
 
+    const exportOfflineDeposits = async (event) => {
+        event && event.preventDefault && event.preventDefault();
+        setExporting(true);
+        try {
+            const limit = 50;
+            let skip = 0;
+            let all = [];
+            // fetch first page
+            const first = await ApiCall('/balance-transaction', 'GET', locale, {}, `sortOrder=0&sortBy=createdAt&type=OfflineDeposit&limit=${limit}&skip=${skip}`, 'admin', router);
+            const total = first.count || 0;
+            all = first.data || [];
+            skip += limit;
+            while (all.length < total) {
+                const res = await ApiCall('/balance-transaction', 'GET', locale, {}, `sortOrder=0&sortBy=createdAt&type=OfflineDeposit&limit=${limit}&skip=${skip}`, 'admin', router);
+                all = all.concat(res.data || []);
+                skip += limit;
+            }
+
+            const days = parseInt(exportDays) || 0;
+            const fromDate = new Date();
+            fromDate.setDate(fromDate.getDate() - days);
+
+            const filtered = all.filter(item => new Date(item.createdAt) >= fromDate);
+
+            if (!filtered.length) {
+                dispatch({ type: 'setSnackbarProps', value: { open: true, content: 'موردی برای خروجی یافت نشد', type: 'info', duration: 3000, refresh: Math.floor(Math.random() * 100) } });
+                setExporting(false);
+                setOpenExportDialog(false);
+                return;
+            }
+
+            const rows = filtered.map(it => ({
+                mobile: it.user?.mobileNumber || '',
+                firstName: it.user?.firstName || '',
+                lastName: it.user?.lastName || '',
+                amount: it.amount || 0,
+                trackingCode: it.trackingCode || it._id || '',
+                cardNumber: it.card?.number || '',
+                createdAt: it.createdAt || '',
+                status: it.status || ''
+            }));
+
+            const XLSX = await import('xlsx');
+            const ws = XLSX.utils.json_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'deposits');
+            const fileName = `fiat_deposits_last_${days}_days_${(new Date()).toISOString().slice(0,10)}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+
+            dispatch({ type: 'setSnackbarProps', value: { open: true, content: 'خروجی اکسل با موفقیت ایجاد شد', type: 'success', duration: 3000, refresh: Math.floor(Math.random() * 100) } });
+
+        } catch (error) {
+            console.log(error);
+            dispatch({ type: 'setSnackbarProps', value: { open: true, content: 'خطا در ایجاد خروجی', type: 'error', duration: 3000, refresh: Math.floor(Math.random() * 100) } });
+        } finally {
+            setExporting(false);
+            setOpenExportDialog(false);
+        }
+    }
+
+    const exportWithdrawals = async (event) => {
+        event && event.preventDefault && event.preventDefault();
+        setExporting(true);
+        try {
+            const limit = 50;
+            let skip = 0;
+            let all = [];
+            // fetch first page
+            const first = await ApiCall('/balance-transaction', 'GET', locale, {}, `sortOrder=0&sortBy=createdAt&type=Withdraw&limit=${limit}&skip=${skip}`, 'admin', router);
+            const total = first.count || 0;
+            all = first.data || [];
+            skip += limit;
+            while (all.length < total) {
+                const res = await ApiCall('/balance-transaction', 'GET', locale, {}, `sortOrder=0&sortBy=createdAt&type=Withdraw&limit=${limit}&skip=${skip}`, 'admin', router);
+                all = all.concat(res.data || []);
+                skip += limit;
+            }
+
+            const days = parseInt(exportDays) || 0;
+            const fromDate = new Date();
+            fromDate.setDate(fromDate.getDate() - days);
+
+            const filtered = all.filter(item => new Date(item.createdAt) >= fromDate);
+
+            if (!filtered.length) {
+                dispatch({ type: 'setSnackbarProps', value: { open: true, content: 'موردی برای خروجی یافت نشد', type: 'info', duration: 3000, refresh: Math.floor(Math.random() * 100) } });
+                setExporting(false);
+                setOpenExportDialog(false);
+                return;
+            }
+
+            const rows = filtered.map(it => ({
+                mobile: it.user?.mobileNumber || '',
+                firstName: it.user?.firstName || '',
+                lastName: it.user?.lastName || '',
+                amount: it.amount || 0,
+                trackingCode: it.trackingCode || it._id || '',
+                cardNumber: it.card?.number || '',
+                createdAt: it.createdAt || '',
+                status: it.status || ''
+            }));
+
+            const XLSX = await import('xlsx');
+            const ws = XLSX.utils.json_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'withdrawals');
+            const fileName = `fiat_withdrawals_last_${days}_days_${(new Date()).toISOString().slice(0,10)}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+
+            dispatch({ type: 'setSnackbarProps', value: { open: true, content: 'خروجی اکسل با موفقیت ایجاد شد', type: 'success', duration: 3000, refresh: Math.floor(Math.random() * 100) } });
+
+        } catch (error) {
+            console.log(error);
+            dispatch({ type: 'setSnackbarProps', value: { open: true, content: 'خطا در ایجاد خروجی', type: 'error', duration: 3000, refresh: Math.floor(Math.random() * 100) } });
+        } finally {
+            setExporting(false);
+            setOpenExportDialog(false);
+        }
+    }
+
     return (
         <div className=" flex flex-col gap-y-8">
             {firstLoading ? '' : <>
@@ -368,16 +492,19 @@ const FiatTransationsPageCompo = (props) => {
                                 }}
                                 InputProps={{
                                     classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' },
-                                    sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' }
-                                }}
-                                value={searchTransactions}
-                                onChange={(event) => setSearchTransactions(event.target.value)}
-                                onKeyDown={searchTransactionsItemsHandler}
-                                onKeyUp={searchTransactionsItems} />
-                        </FormControl>
-                    </form>
+                                sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' }
+                            }}
+                            value={searchTransactions}
+                            onChange={(event) => setSearchTransactions(event.target.value)}
+                            onKeyDown={searchTransactionsItemsHandler}
+                            onKeyUp={searchTransactionsItems} />
+                    </FormControl>
+                </form>
+                <div className="flex items-center gap-x-4">
+                    {tabValue == 1 ? <Button variant="outlined" size="small" onClick={() => setOpenExportDialog(true)}>خروجی اکسل</Button> : ''}
+                    {tabValue == 3 ? <Button variant="outlined" size="small" onClick={() => setOpenExportDialog(true)}>خروجی اکسل</Button> : ''}
                     <span className="dark:text-white">تعداد کل: {loadingTransactions ? <CircularProgress color={darkModeToggle ? 'white' : 'black'} size={15} /> : (transactionsTotal || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>
-                </div>
+                </div>                </div>
             </>}
             {loadingTransactions ? <div className="flex justify-center items-center mt-16"><CircularProgress color={darkModeToggle ? 'white' : 'black'} /></div>
                 :
@@ -491,6 +618,28 @@ const FiatTransationsPageCompo = (props) => {
                         page={pageItem} onChange={handlePageChange} />
                 </div>
                 : ''}
+
+            {/* Export to Excel Dialog */}
+            <Dialog onClose={() => setOpenExportDialog(false)} open={openExportDialog} maxWidth={'xs'} fullWidth PaperProps={{ className: 'modals' }}>
+                <div className="flex flex-col gap-y-4 p-4">
+                    <FormControl>
+                        <TextField
+                            type="number"
+                            label="تعداد روز (مثال: 5)"
+                            InputLabelProps={{ sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' } }}
+                            InputProps={{ classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' }, sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' } }}
+                            value={exportDays}
+                            onChange={(e) => setExportDays(e.target.value)} />
+                    </FormControl>
+                    <div className="flex items-center justify-end gap-x-2">
+                        <Button variant="text" onClick={() => setOpenExportDialog(false)}>انصراف</Button>
+                        <LoadingButton type="button" variant="contained" size="medium" className="rounded-lg" disableElevation loading={exporting}
+                            onClick={tabValue == 3 ? exportWithdrawals : exportOfflineDeposits}>
+                            <text className="text-black font-semibold">خروجی اکسل</text>
+                        </LoadingButton >
+                    </div>
+                </div>
+            </Dialog>
 
             {/* Change Status Transactions */}
             <>

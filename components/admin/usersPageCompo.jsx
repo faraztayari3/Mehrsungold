@@ -22,12 +22,18 @@ import CancelIcon from '@mui/icons-material/CancelOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircleOutline'
 import IconButton from '@mui/material/IconButton';
 import Divider from '@mui/material/Divider';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import Tooltip from '@mui/material/Tooltip';
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import DeleteIcon from '@mui/icons-material/Delete';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import moment from 'jalali-moment'
 import DatePicker from "react-datepicker2"
 
@@ -142,6 +148,9 @@ const UsersPageCompo = (props) => {
     ]
 
     const [pageItem, setPageItem] = useState(1);
+    // Sorting state: sortBy matches backend field name, sortOrder: 0 or 1 (backend expects numeric)
+    const [sortBy, setSortBy] = useState('createdAt');
+    const [sortOrder, setSortOrder] = useState(0);
     const [firstLoading, setFirstLoading] = useState(true);
     useEffect(() => {
         getUsers(1, '');
@@ -155,9 +164,49 @@ const UsersPageCompo = (props) => {
     const [loadingUsers, setLoadingUsers] = useState(true);
     const [usersLimit, setUsersLimit] = useState(10);
     const [usersTotal, setUsersTotal] = useState(0);
+    const [openExportDialog, setOpenExportDialog] = useState(false);
+    const [exportDays, setExportDays] = useState(7);
+    const [exportMinBalance, setExportMinBalance] = useState('');
+    const [exportMaxBalance, setExportMaxBalance] = useState('');
+    const [exporting, setExporting] = useState(false);
+    const [openFilterDialog, setOpenFilterDialog] = useState(false);
+    const [filterMinBalance, setFilterMinBalance] = useState('');
+    const [filterMaxBalance, setFilterMaxBalance] = useState('');
+    const [filterRole, setFilterRole] = useState('');
+    const [filterVerificationStatus, setFilterVerificationStatus] = useState('');
     const getUsers = (page, status, search) => {
         setLoadingUsers(true);
-        ApiCall('/user', 'GET', locale, {}, `${search ? `search=${search}&` : ''}${status ? `verificationStatus=PendingFirstLevel&verificationStatus=PendingSecondLevel&` : ''}roles=User&roles=VIPUser&sortOrder=0&sortBy=createdAt&limit=${usersLimit}&skip=${(page * usersLimit) - usersLimit}`, 'admin', router).then(async (result) => {
+        let queryParams = `${search ? `search=${search}&` : ''}${status ? `verificationStatus=PendingFirstLevel&verificationStatus=PendingSecondLevel&` : ''}`;
+        
+        // Add role filter
+        if (filterRole) {
+            queryParams += `roles=${filterRole}&`;
+        } else {
+            queryParams += `roles=User&roles=VIPUser&`;
+        }
+        
+        // Add verification status filter
+        if (filterVerificationStatus) {
+            queryParams += `verificationStatus=${filterVerificationStatus}&`;
+        }
+        
+        queryParams += `sortOrder=${sortOrder}&sortBy=${sortBy}&limit=${usersLimit}&skip=${(page * usersLimit) - usersLimit}`;
+        
+        ApiCall('/user', 'GET', locale, {}, queryParams, 'admin', router).then(async (result) => {
+            let filteredData = result.data;
+            
+            // Apply balance filter on client side
+            if (filterMinBalance || filterMaxBalance) {
+                const minBal = parseFloat(filterMinBalance) || 0;
+                const maxBal = parseFloat(filterMaxBalance) || Infinity;
+                filteredData = result.data.filter(user => {
+                    const balance = user.tomanBalance || 0;
+                    return balance >= minBal && balance <= maxBal;
+                });
+            }
+            
+            setUsersTotal(filteredData.length);
+            setUsers(filteredData);
             setUsersTotal(result.count);
             setUsers(result.data);
             setLoadingUsers(false);
@@ -167,6 +216,26 @@ const UsersPageCompo = (props) => {
             setFirstLoading(false);
             console.log(error);
         });
+    }
+
+    // Generic toggle sort for any backend field
+    const toggleSortBy = (fieldName, defaultOrder = 1) => {
+        if (sortBy === fieldName) {
+            setSortOrder(prev => 1 - prev);
+        } else {
+            setSortBy(fieldName);
+            setSortOrder(defaultOrder);
+        }
+        // reload users from first page with new sort
+        setPageItem(1);
+        // give state a tick, then call getUsers using updated state in next tick
+        setTimeout(() => {
+            if (tabValue == 0) {
+                getUsers(1, '');
+            } else {
+                getUsers(1, 'pendings');
+            }
+        }, 0);
     }
 
     const [tabValue, setTabValue] = useState(0);
@@ -515,11 +584,114 @@ const UsersPageCompo = (props) => {
         });
     }
 
+    const exportUsers = async (event) => {
+        event && event.preventDefault && event.preventDefault();
+        setExporting(true);
+        try {
+            const limit = 50;
+            let skip = 0;
+            let all = [];
+            // fetch first page
+            const first = await ApiCall('/user', 'GET', locale, {}, `roles=User&roles=VIPUser&sortOrder=${sortOrder}&sortBy=${sortBy}&limit=${limit}&skip=${skip}`, 'admin', router);
+            const total = first.count || 0;
+            all = first.data || [];
+            skip += limit;
+            while (all.length < total) {
+                const res = await ApiCall('/user', 'GET', locale, {}, `roles=User&roles=VIPUser&sortOrder=${sortOrder}&sortBy=${sortBy}&limit=${limit}&skip=${skip}`, 'admin', router);
+                all = all.concat(res.data || []);
+                skip += limit;
+            }
+
+            const days = parseInt(exportDays) || 0;
+            const fromDate = new Date();
+            fromDate.setDate(fromDate.getDate() - days);
+
+            const minBalance = parseFloat(exportMinBalance) || 0;
+            const maxBalance = parseFloat(exportMaxBalance) || Infinity;
+
+            const filtered = all.filter(item => {
+                const meetsDateRequirement = new Date(item.createdAt) >= fromDate;
+                const balance = item.tomanBalance || 0;
+                const meetsBalanceRequirement = balance >= minBalance && balance <= maxBalance;
+                return meetsDateRequirement && meetsBalanceRequirement;
+            });
+
+            if (!filtered.length) {
+                dispatch({ type: 'setSnackbarProps', value: { open: true, content: 'موردی برای خروجی یافت نشد', type: 'info', duration: 3000, refresh: Math.floor(Math.random() * 100) } });
+                setExporting(false);
+                setOpenExportDialog(false);
+                return;
+            }
+
+            const rows = filtered.map(it => ({
+                mobile: it.mobileNumber || '',
+                firstName: it.firstName || '',
+                lastName: it.lastName || '',
+                nationalCode: it.nationalCode || '',
+                email: it.email || '',
+                tomanBalance: it.tomanBalance || 0,
+                role: it.role || '',
+                verificationStatus: it.verificationStatus || '',
+                createdAt: it.createdAt || ''
+            }));
+
+            const XLSX = await import('xlsx');
+            const ws = XLSX.utils.json_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'users');
+            const fileName = `users_last_${days}_days_${(new Date()).toISOString().slice(0,10)}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+
+            dispatch({ type: 'setSnackbarProps', value: { open: true, content: 'خروجی اکسل با موفقیت ایجاد شد', type: 'success', duration: 3000, refresh: Math.floor(Math.random() * 100) } });
+
+        } catch (error) {
+            console.log(error);
+            dispatch({ type: 'setSnackbarProps', value: { open: true, content: 'خطا در ایجاد خروجی', type: 'error', duration: 3000, refresh: Math.floor(Math.random() * 100) } });
+        } finally {
+            setExporting(false);
+            setOpenExportDialog(false);
+        }
+    }
+
+    const applyFilter = () => {
+        setPageItem(1);
+        if (tabValue == 0) {
+            getUsers(1, '');
+        } else {
+            getUsers(1, 'pendings');
+        }
+        setOpenFilterDialog(false);
+    }
+
+    const clearFilter = () => {
+        setFilterMinBalance('');
+        setFilterMaxBalance('');
+        setFilterRole('');
+        setFilterVerificationStatus('');
+        setPageItem(1);
+        setTimeout(() => {
+            if (tabValue == 0) {
+                getUsers(1, '');
+            } else {
+                getUsers(1, 'pendings');
+            }
+        }, 0);
+        setOpenFilterDialog(false);
+    }
+
     return (
         <div className=" flex flex-col gap-y-8">
             <div className="flex items-center justify-between">
                 <h1 className="text-large-2">کاربران</h1>
                 <div className="flex items-center gap-x-4">
+                    <Button type="button" variant="outlined" size="medium" className="rounded-lg" startIcon={<FilterListIcon />}
+                        onClick={() => setOpenFilterDialog(true)}>
+                        <text className="font-semibold">فیلتر</text>
+                    </Button >
+                    <Button type="button" variant="outlined" size="medium" className="rounded-lg" 
+                        onClick={() => setOpenExportDialog(true)}>
+                        <text className="font-semibold">خروجی اکسل</text>
+                    </Button >
                     <Button type="button" variant="contained" size="medium" className="rounded-lg" disableElevation
                         onClick={handleShowAddUser}>
                         <text className="text-black font-semibold">افزودن کاربر</text>
@@ -560,16 +732,56 @@ const UsersPageCompo = (props) => {
                         <Table sx={{ minWidth: 650 }} aria-label="simple table" className="rounded-xl border-separate border-spacing-y-2">
                             <TableHead className="dark:bg-dark">
                                 <TableRow>
-                                    {tabValue == 0 ? USERS_TABLE_HEAD.map((data, index) => (
-                                        <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-end pb-4`} key={index}>
-                                            <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
-                                        </TableCell>
-                                    )) : ''}
-                                    {tabValue == 1 ? PENDING_USERS_TABLE_HEAD.map((data, index) => (
-                                        <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-end pb-4`} key={index}>
-                                            <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
-                                        </TableCell>
-                                    )) : ''}
+                                    {tabValue == 0 ? USERS_TABLE_HEAD.map((data, index) => {
+                                        const sortableMap = {
+                                            2: 'tomanBalance',
+                                            3: 'createdAt',
+                                            4: 'role',
+                                            5: 'verificationStatus'
+                                        };
+                                        const field = sortableMap[index];
+                                        return (
+                                            <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-end pb-4`} key={index}>
+                                                {field ? (
+                                                    <div onClick={() => toggleSortBy(field, 1)} role="button" className="flex items-center gap-x-2 cursor-pointer select-none">
+                                                        <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                                        <div className="flex items-center">
+                                                            {sortBy === field ? (
+                                                                sortOrder == 1 ? <ArrowDownwardIcon fontSize="small" className="text-primary" /> : <ArrowUpwardIcon fontSize="small" className="text-primary" />
+                                                            ) : <ArrowDownwardIcon fontSize="small" className="opacity-30" />}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                                )}
+                                            </TableCell>
+                                        )
+                                    }) : ''}
+                                    {tabValue == 1 ? PENDING_USERS_TABLE_HEAD.map((data, index) => {
+                                        // pending head indices: 4 -> createdAt, 5 -> role, 6 -> verificationStatus
+                                        const pendingSortableMap = {
+                                            4: 'createdAt',
+                                            5: 'role',
+                                            6: 'verificationStatus'
+                                        };
+                                        const field = pendingSortableMap[index];
+                                        return (
+                                            <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-end pb-4`} key={index}>
+                                                {field ? (
+                                                    <div onClick={() => toggleSortBy(field, 1)} role="button" className="flex items-center gap-x-2 cursor-pointer select-none">
+                                                        <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                                        <div className="flex items-center">
+                                                            {sortBy === field ? (
+                                                                sortOrder == 1 ? <ArrowDownwardIcon fontSize="small" className="text-primary" /> : <ArrowUpwardIcon fontSize="small" className="text-primary" />
+                                                            ) : <ArrowDownwardIcon fontSize="small" className="opacity-30" />}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                                )}
+                                            </TableCell>
+                                        )
+                                    }) : ''}
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -1285,6 +1497,128 @@ const UsersPageCompo = (props) => {
                         </div>
                     </div>
                 </SwipeableDrawer>
+
+                {/* Filter Dialog */}
+                <Dialog onClose={() => setOpenFilterDialog(false)} open={openFilterDialog} maxWidth={'sm'} fullWidth PaperProps={{ className: 'modals' }}>
+                    <div className="flex flex-col gap-y-4 p-4">
+                        <h2 className="text-xl font-semibold dark:text-white">فیلتر کاربران</h2>
+                        
+                        <div className="grid grid-cols-2 gap-x-4">
+                            <FormControl fullWidth>
+                                <TextField
+                                    type="number"
+                                    label="حداقل موجودی تومان"
+                                    InputLabelProps={{ sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' } }}
+                                    InputProps={{ classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' }, sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' } }}
+                                    value={filterMinBalance}
+                                    onChange={(e) => setFilterMinBalance(e.target.value)} />
+                            </FormControl>
+                            <FormControl fullWidth>
+                                <TextField
+                                    type="number"
+                                    label="حداکثر موجودی تومان"
+                                    InputLabelProps={{ sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' } }}
+                                    InputProps={{ classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' }, sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' } }}
+                                    value={filterMaxBalance}
+                                    onChange={(e) => setFilterMaxBalance(e.target.value)} />
+                            </FormControl>
+                        </div>
+
+                        <FormControl fullWidth>
+                            <InputLabel sx={{ color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' }}>نوع حساب</InputLabel>
+                            <Select
+                                value={filterRole}
+                                label="نوع حساب"
+                                onChange={(e) => setFilterRole(e.target.value)}
+                                sx={{ 
+                                    border: '1px solid rgb(255, 255, 255,0.2)', 
+                                    borderRadius: '16px',
+                                    '& .MuiSelect-select': { color: darkModeToggle ? 'white' : 'black' }
+                                }}
+                                className="dark:bg-dark"
+                            >
+                                <MenuItem value="">همه</MenuItem>
+                                <MenuItem value="User">ساده</MenuItem>
+                                <MenuItem value="VIPUser">ویژه</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        <FormControl fullWidth>
+                            <InputLabel sx={{ color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' }}>وضعیت احراز هویت</InputLabel>
+                            <Select
+                                value={filterVerificationStatus}
+                                label="وضعیت احراز هویت"
+                                onChange={(e) => setFilterVerificationStatus(e.target.value)}
+                                sx={{ 
+                                    border: '1px solid rgb(255, 255, 255,0.2)', 
+                                    borderRadius: '16px',
+                                    '& .MuiSelect-select': { color: darkModeToggle ? 'white' : 'black' }
+                                }}
+                                className="dark:bg-dark"
+                            >
+                                <MenuItem value="">همه</MenuItem>
+                                <MenuItem value="NotVerified">احراز نشده</MenuItem>
+                                <MenuItem value="FirstLevelVerified">احراز اولیه</MenuItem>
+                                <MenuItem value="SecondLevelVerified">احراز کامل</MenuItem>
+                                <MenuItem value="PendingFirstLevel">در انتظار احراز اولیه</MenuItem>
+                                <MenuItem value="PendingSecondLevel">در انتظار احراز کامل</MenuItem>
+                                <MenuItem value="FirstLevelRejected">رد احراز اولیه</MenuItem>
+                                <MenuItem value="SecondLevelRejected">رد احراز کامل</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        <div className="flex items-center justify-end gap-x-2">
+                            <Button variant="text" onClick={clearFilter}>پاک کردن فیلتر</Button>
+                            <Button variant="text" onClick={() => setOpenFilterDialog(false)}>انصراف</Button>
+                            <LoadingButton type="button" variant="contained" size="medium" className="rounded-lg" disableElevation
+                                onClick={applyFilter}>
+                                <text className="text-black font-semibold">اعمال فیلتر</text>
+                            </LoadingButton >
+                        </div>
+                    </div>
+                </Dialog>
+
+                {/* Export to Excel Dialog */}
+                <Dialog onClose={() => setOpenExportDialog(false)} open={openExportDialog} maxWidth={'sm'} fullWidth PaperProps={{ className: 'modals' }}>
+                    <div className="flex flex-col gap-y-4 p-4">
+                        <FormControl>
+                            <TextField
+                                type="number"
+                                label="تعداد روز (مثال: 5)"
+                                InputLabelProps={{ sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' } }}
+                                InputProps={{ classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' }, sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' } }}
+                                value={exportDays}
+                                onChange={(e) => setExportDays(e.target.value)} />
+                        </FormControl>
+                        <div className="grid grid-cols-2 gap-x-4">
+                            <FormControl>
+                                <TextField
+                                    type="number"
+                                    label="حداقل موجودی تومان"
+                                    InputLabelProps={{ sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' } }}
+                                    InputProps={{ classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' }, sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' } }}
+                                    value={exportMinBalance}
+                                    onChange={(e) => setExportMinBalance(e.target.value)} />
+                            </FormControl>
+                            <FormControl>
+                                <TextField
+                                    type="number"
+                                    label="حداکثر موجودی تومان"
+                                    InputLabelProps={{ sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' } }}
+                                    InputProps={{ classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' }, sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' } }}
+                                    value={exportMaxBalance}
+                                    onChange={(e) => setExportMaxBalance(e.target.value)} />
+                            </FormControl>
+                        </div>
+                        <div className="flex items-center justify-end gap-x-2">
+                            <Button variant="text" onClick={() => setOpenExportDialog(false)}>انصراف</Button>
+                            <LoadingButton type="button" variant="contained" size="medium" className="rounded-lg" disableElevation loading={exporting}
+                                onClick={exportUsers}>
+                                <text className="text-black font-semibold">خروجی اکسل</text>
+                            </LoadingButton >
+                        </div>
+                    </div>
+                </Dialog>
             </>
         </div>
     )
