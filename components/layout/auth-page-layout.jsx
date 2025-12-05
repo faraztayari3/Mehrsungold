@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Image from 'next/image';
 import LinkRouter from 'next/link';
 import Link from '@mui/material/Link';
 import Button from '@mui/material/Button';
@@ -45,8 +46,18 @@ const AuthPageLayout = ({ children }) => {
                                 <img src="/assets/img/svg/auth-svg.svg" alt="auth-svg" className="h-80 hidden lg:block absolute bottom-0 right-[80%] w-52" />
                             </div>
                         </div>
-                        <div id="auth-scroll" className="col-span-12 lg:col-span-6 xl:col-span-8 h-full flex items-center justify-center dark:bg-dark-alt">
+                        <div id="auth-scroll" className="col-span-12 lg:col-span-6 xl:col-span-8 h-full flex flex-col items-center justify-center dark:bg-dark-alt">
+                            <div className="flex justify-center mb-6">
+                                <Image 
+                                    src="/assets/img/logo.svg" 
+                                    alt="Mehrsun Gold Logo" 
+                                    width={150} 
+                                    height={150}
+                                    priority
+                                />
+                            </div>
                             {children}
+                
                         </div>
                     </div>
                 </div>
@@ -58,3 +69,5 @@ const AuthPageLayout = ({ children }) => {
 }
 
 export default AuthPageLayout;
+
+
