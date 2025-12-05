@@ -109,6 +109,9 @@ const TradesPageCompo = (props) => {
     const [loadingTransactions, setLoadingTransactions] = useState(true);
     const [transactionsLimit, settransactionsLimit] = useState(10);
     const [transactionsTotal, setTransactionsTotal] = useState(0);
+    const [openExportDialog, setOpenExportDialog] = useState(false);
+    const [exportDays, setExportDays] = useState(7);
+    const [exporting, setExporting] = useState(false);
     const getTransactions = (search) => {
         setLoadingTransactions(true);
         ApiCall('/transaction', 'GET', locale, {}, `${search ? `search=${search}&` : ''}sortOrder=0&sortBy=createdAt&limit=${transactionsLimit}&skip=${(pageItem * transactionsLimit) - transactionsLimit}`, 'admin', router).then(async (result) => {
@@ -207,6 +210,67 @@ const TradesPageCompo = (props) => {
         }
     }
 
+    const exportTrades = async (event) => {
+        event && event.preventDefault && event.preventDefault();
+        setExporting(true);
+        try {
+            const limit = 50;
+            let skip = 0;
+            let all = [];
+            // fetch first page
+            const first = await ApiCall('/transaction', 'GET', locale, {}, `sortOrder=0&sortBy=createdAt&limit=${limit}&skip=${skip}`, 'admin', router);
+            const total = first.count || 0;
+            all = first.data || [];
+            skip += limit;
+            while (all.length < total) {
+                const res = await ApiCall('/transaction', 'GET', locale, {}, `sortOrder=0&sortBy=createdAt&limit=${limit}&skip=${skip}`, 'admin', router);
+                all = all.concat(res.data || []);
+                skip += limit;
+            }
+
+            const days = parseInt(exportDays) || 0;
+            const fromDate = new Date();
+            fromDate.setDate(fromDate.getDate() - days);
+
+            const filtered = all.filter(item => new Date(item.createdAt) >= fromDate);
+
+            if (!filtered.length) {
+                dispatch({ type: 'setSnackbarProps', value: { open: true, content: 'موردی برای خروجی یافت نشد', type: 'info', duration: 3000, refresh: Math.floor(Math.random() * 100) } });
+                setExporting(false);
+                setOpenExportDialog(false);
+                return;
+            }
+
+            const rows = filtered.map(it => ({
+                user: it.user?.mobileNumber || '',
+                tradeable: it.tradeable?.name || '',
+                type: it.type || '',
+                amount: it.amount || 0,
+                total: it.total || 0,
+                price: it.price || 0,
+                fee: it.fee || 0,
+                createdAt: it.createdAt || '',
+                status: it.status || ''
+            }));
+
+            const XLSX = await import('xlsx');
+            const ws = XLSX.utils.json_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'trades');
+            const fileName = `trades_last_${days}_days_${(new Date()).toISOString().slice(0,10)}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+
+            dispatch({ type: 'setSnackbarProps', value: { open: true, content: 'خروجی اکسل با موفقیت ایجاد شد', type: 'success', duration: 3000, refresh: Math.floor(Math.random() * 100) } });
+
+        } catch (error) {
+            console.log(error);
+            dispatch({ type: 'setSnackbarProps', value: { open: true, content: 'خطا در ایجاد خروجی', type: 'error', duration: 3000, refresh: Math.floor(Math.random() * 100) } });
+        } finally {
+            setExporting(false);
+            setOpenExportDialog(false);
+        }
+    }
+
     return (
         <div className=" flex flex-col gap-y-8">
             <h1 className="text-large-2">معاملات</h1>
@@ -218,21 +282,22 @@ const TradesPageCompo = (props) => {
                             type="text"
                             label="جستجو معامله"
                             InputLabelProps={{
-                                sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' }
-                            }}
-                            InputProps={{
-                                classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' },
-                                sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' }
-                            }}
-                            onChange={(event) => setSearchTransactions(event.target.value)}
-                            onKeyDown={searchTransactionsItemsHandler}
-                            onKeyUp={searchTransactionsItems} />
-                    </FormControl>
-                </form>
+                            sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' }
+                        }}
+                        InputProps={{
+                            classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' },
+                            sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' }
+                        }}
+                        onChange={(event) => setSearchTransactions(event.target.value)}
+                        onKeyDown={searchTransactionsItemsHandler}
+                        onKeyUp={searchTransactionsItems} />
+                </FormControl>
+            </form>
+            <div className="flex items-center gap-x-4">
+                <Button variant="outlined" size="small" onClick={() => setOpenExportDialog(true)}>خروجی اکسل</Button>
                 <span className="dark:text-white">تعداد کل: {loadingTransactions ? <CircularProgress color={darkModeToggle ? 'white' : 'black'} size={15} /> : (transactionsTotal || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>
             </div>
-
-            {loadingTransactions ? <div className="flex justify-center items-center mt-16"><CircularProgress color={darkModeToggle ? 'white' : 'black'} /></div>
+        </div>            {loadingTransactions ? <div className="flex justify-center items-center mt-16"><CircularProgress color={darkModeToggle ? 'white' : 'black'} /></div>
                 :
                 <section className="overflow-x-auto overflow-y-hidden">
                     {transactions.length > 0 ?
@@ -414,6 +479,28 @@ const TradesPageCompo = (props) => {
                         </div>
                     </div>
                 </SwipeableDrawer>
+
+                {/* Export to Excel Dialog */}
+                <Dialog onClose={() => setOpenExportDialog(false)} open={openExportDialog} maxWidth={'xs'} fullWidth PaperProps={{ className: 'modals' }}>
+                    <div className="flex flex-col gap-y-4 p-4">
+                        <FormControl>
+                            <TextField
+                                type="number"
+                                label="تعداد روز (مثال: 5)"
+                                InputLabelProps={{ sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' } }}
+                                InputProps={{ classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' }, sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' } }}
+                                value={exportDays}
+                                onChange={(e) => setExportDays(e.target.value)} />
+                        </FormControl>
+                        <div className="flex items-center justify-end gap-x-2">
+                            <Button variant="text" onClick={() => setOpenExportDialog(false)}>انصراف</Button>
+                            <LoadingButton type="button" variant="contained" size="medium" className="rounded-lg" disableElevation loading={exporting}
+                                onClick={exportTrades}>
+                                <text className="text-black font-semibold">خروجی اکسل</text>
+                            </LoadingButton >
+                        </div>
+                    </div>
+                </Dialog>
             </>
         </div>
     )
