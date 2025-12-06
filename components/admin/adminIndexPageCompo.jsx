@@ -26,7 +26,10 @@ const AdminIndexPageCompo = (props) => {
     const router = useRouter();
     const { locale } = useRouter();
 
+    console.log('🔴 ADMIN INDEX COMPONENT LOADED - VERSION 2.0');
+
     useEffect(() => {
+        console.log('🔴 useEffect running, calling getWeeklyMetals');
         getDashboardInfo();
         getNewUsersInfo();
         getUsers();
@@ -110,11 +113,12 @@ const AdminIndexPageCompo = (props) => {
     });
     const [loadingWeeklyMetals, setLoadingWeeklyMetals] = useState(true);
     const getWeeklyMetals = () => {
+        console.log('🔴 getWeeklyMetals called!');
         setLoadingWeeklyMetals(true);
         
         // Temporary test data
         console.log('[Weekly Metals] Using test data temporarily');
-        setWeeklyMetals({
+        const testData = {
             gold: {
                 buy: { grams: '125.500', milligrams: '125500' },
                 sell: { grams: '98.750', milligrams: '98750' },
@@ -125,8 +129,11 @@ const AdminIndexPageCompo = (props) => {
                 sell: { grams: '210.125', milligrams: '210125' },
                 total: { grams: '560.375', milligrams: '560375' }
             }
-        });
+        };
+        console.log('🔴 Setting weeklyMetals to:', testData);
+        setWeeklyMetals(testData);
         setLoadingWeeklyMetals(false);
+        console.log('🔴 weeklyMetals set, loading set to false');
         return; // Stop here for testing
         
         // Original API code below (commented out for testing)
@@ -317,7 +324,7 @@ const AdminIndexPageCompo = (props) => {
                                     <span className="font-bold">طلای معامله شده (هفته):</span>
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-green-600">خرید:</span>
-                                        <span className="ltr">{(parseFloat(weeklyMetals?.gold?.buy?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))} گرم</span>
+                                        <span className="ltr">{console.log('🔴 Rendering gold buy:', weeklyMetals?.gold?.buy?.grams) || (parseFloat(weeklyMetals?.gold?.buy?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))} گرم</span>
                                     </div>
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-red-600">فروش:</span>
