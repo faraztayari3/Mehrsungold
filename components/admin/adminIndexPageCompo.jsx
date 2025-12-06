@@ -93,15 +93,67 @@ const AdminIndexPageCompo = (props) => {
 
     /**
         * Retrieves Weekly Metals Info (Gold & Silver).
+        * Calculates from transaction data instead of separate endpoint
         * @returns None
        */
     const [weeklyMetals, setWeeklyMetals] = useState();
     const [loadingWeeklyMetals, setLoadingWeeklyMetals] = useState(true);
     const getWeeklyMetals = () => {
         setLoadingWeeklyMetals(true);
-        const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL || process.env.NEXT_PUBLIC_BASEURL;
-        ApiCall(`${dashboardUrl}/dashboard/weekly-metals`, 'GET', locale, {}, ``, 'admin', router).then(async (result) => {
-            setWeeklyMetals(result);
+        
+        // Calculate date from 7 days ago
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const startDate = oneWeekAgo.toISOString();
+        
+        // Fetch all successful transactions from the last week
+        ApiCall('/transaction', 'GET', locale, {}, `status=Successful&startDate=${startDate}`, 'admin', router).then(async (result) => {
+            if (result && result.transactions) {
+                // Find gold and silver tradeable IDs (you may need to adjust these based on your data)
+                const goldTransactions = result.transactions.filter(t => 
+                    t.tradeable && (t.tradeable.name === 'gold' || t.tradeable.symbol === 'Au')
+                );
+                const silverTransactions = result.transactions.filter(t => 
+                    t.tradeable && (t.tradeable.name === 'silver' || t.tradeable.symbol === 'Ag')
+                );
+                
+                // Calculate totals
+                const goldBuy = goldTransactions.filter(t => t.type === 'Buy').reduce((sum, t) => sum + (t.amount || 0), 0);
+                const goldSell = goldTransactions.filter(t => t.type === 'Sell').reduce((sum, t) => sum + (t.amount || 0), 0);
+                const silverBuy = silverTransactions.filter(t => t.type === 'Buy').reduce((sum, t) => sum + (t.amount || 0), 0);
+                const silverSell = silverTransactions.filter(t => t.type === 'Sell').reduce((sum, t) => sum + (t.amount || 0), 0);
+                
+                setWeeklyMetals({
+                    gold: {
+                        buy: {
+                            grams: goldBuy.toFixed(3),
+                            milligrams: (goldBuy * 1000).toFixed(0)
+                        },
+                        sell: {
+                            grams: goldSell.toFixed(3),
+                            milligrams: (goldSell * 1000).toFixed(0)
+                        },
+                        total: {
+                            grams: (goldBuy + goldSell).toFixed(3),
+                            milligrams: ((goldBuy + goldSell) * 1000).toFixed(0)
+                        }
+                    },
+                    silver: {
+                        buy: {
+                            grams: silverBuy.toFixed(3),
+                            milligrams: (silverBuy * 1000).toFixed(0)
+                        },
+                        sell: {
+                            grams: silverSell.toFixed(3),
+                            milligrams: (silverSell * 1000).toFixed(0)
+                        },
+                        total: {
+                            grams: (silverBuy + silverSell).toFixed(3),
+                            milligrams: ((silverBuy + silverSell) * 1000).toFixed(0)
+                        }
+                    }
+                });
+            }
             setLoadingWeeklyMetals(false);
         }).catch((error) => {
             setLoadingWeeklyMetals(false);
