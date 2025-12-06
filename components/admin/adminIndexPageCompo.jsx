@@ -96,11 +96,41 @@ const AdminIndexPageCompo = (props) => {
         * Calculates from transaction data instead of separate endpoint
         * @returns None
        */
-    const [weeklyMetals, setWeeklyMetals] = useState();
+    const [weeklyMetals, setWeeklyMetals] = useState({
+        gold: {
+            buy: { grams: '0.000', milligrams: '0' },
+            sell: { grams: '0.000', milligrams: '0' },
+            total: { grams: '0.000', milligrams: '0' }
+        },
+        silver: {
+            buy: { grams: '0.000', milligrams: '0' },
+            sell: { grams: '0.000', milligrams: '0' },
+            total: { grams: '0.000', milligrams: '0' }
+        }
+    });
     const [loadingWeeklyMetals, setLoadingWeeklyMetals] = useState(true);
     const getWeeklyMetals = () => {
         setLoadingWeeklyMetals(true);
         
+        // Temporary test data
+        console.log('[Weekly Metals] Using test data temporarily');
+        setWeeklyMetals({
+            gold: {
+                buy: { grams: '125.500', milligrams: '125500' },
+                sell: { grams: '98.750', milligrams: '98750' },
+                total: { grams: '224.250', milligrams: '224250' }
+            },
+            silver: {
+                buy: { grams: '350.250', milligrams: '350250' },
+                sell: { grams: '210.125', milligrams: '210125' },
+                total: { grams: '560.375', milligrams: '560375' }
+            }
+        });
+        setLoadingWeeklyMetals(false);
+        return; // Stop here for testing
+        
+        // Original API code below (commented out for testing)
+        /*
         // Calculate date from 7 days ago
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -204,6 +234,7 @@ const AdminIndexPageCompo = (props) => {
             setLoadingWeeklyMetals(false);
             console.log('Error fetching weekly metals:', error);
         });
+        */
     }
 
     return (
