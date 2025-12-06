@@ -32,7 +32,7 @@ const AdminIndexPageCompo = (props) => {
         getUsers();
         getPendingUsers();
         getWeeklyMetals();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     /**
         * Retrieves Dashboard Info.
@@ -153,11 +153,38 @@ const AdminIndexPageCompo = (props) => {
                         }
                     }
                 });
+            } else {
+                // Set default empty values if no data
+                setWeeklyMetals({
+                    gold: {
+                        buy: { grams: '0.000', milligrams: '0' },
+                        sell: { grams: '0.000', milligrams: '0' },
+                        total: { grams: '0.000', milligrams: '0' }
+                    },
+                    silver: {
+                        buy: { grams: '0.000', milligrams: '0' },
+                        sell: { grams: '0.000', milligrams: '0' },
+                        total: { grams: '0.000', milligrams: '0' }
+                    }
+                });
             }
             setLoadingWeeklyMetals(false);
         }).catch((error) => {
+            // Set default values on error to prevent infinite loop
+            setWeeklyMetals({
+                gold: {
+                    buy: { grams: '0.000', milligrams: '0' },
+                    sell: { grams: '0.000', milligrams: '0' },
+                    total: { grams: '0.000', milligrams: '0' }
+                },
+                silver: {
+                    buy: { grams: '0.000', milligrams: '0' },
+                    sell: { grams: '0.000', milligrams: '0' },
+                    total: { grams: '0.000', milligrams: '0' }
+                }
+            });
             setLoadingWeeklyMetals(false);
-            console.log(error);
+            console.log('Error fetching weekly metals:', error);
         });
     }
 
