@@ -245,7 +245,6 @@ const SMSPageCompo = () => {
             } else {
                 throw new Error(res?.message || 'Failed to save')
             }
-            }
         } catch (error) {
             console.log('Save error:', error)
             dispatch({
