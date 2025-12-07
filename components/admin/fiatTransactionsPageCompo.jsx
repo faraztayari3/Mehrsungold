@@ -35,6 +35,7 @@ import { useAppContext } from "../../context/AppContext";
 // Service
 import ApiCall from "../../services/api_call"
 import CheckCardNumber from "../../services/checkCardNumber"
+import { sendDepositSMS, sendWithdrawalSMS } from "../../services/smsService";
 
 /**
  * FiatTransationsPageCompo component that displays the FiatTransations Page Component of the website.
@@ -249,8 +250,10 @@ const FiatTransationsPageCompo = (props) => {
     const [showChangeStatus, setShowChangeStatus] = useState(false);
     const [openBottomChangeStatusDrawer, setOpenBottomChangeStatusDrawer] = useState(false);
     const [statusType, setStatusType] = useState('Accepted');
-    const handleShowChangeStatus = (transactionId, type) => () => {
-        setTransactionId(transactionId);
+    const [currentTransaction, setCurrentTransaction] = useState(null);
+    const handleShowChangeStatus = (transactionItem, type) => () => {
+        setTransactionId(transactionItem._id);
+        setCurrentTransaction(transactionItem); // Save transaction for SMS
         setStatusType(type);
         if (window.innerWidth >= 1024) {
             setShowChangeStatus(true);
@@ -276,6 +279,14 @@ const FiatTransationsPageCompo = (props) => {
             if (tabValue == 1) {
                 let body = status == 'Accepted' ? { id: transactionId, status } : { id: transactionId, status, confirmDescription: rejectDesc }
                 ApiCall(`/balance-transaction/confirm-offline-deposit`, 'PATCH', locale, body, '', 'admin', router).then(async (result) => {
+                    // Send SMS if approved
+                    if (status == 'Accepted' && currentTransaction?.user?.mobileNumber) {
+                        sendDepositSMS(
+                            currentTransaction.user.mobileNumber,
+                            currentTransaction.amount
+                        ).catch(err => console.log('[SMS] Failed:', err));
+                    }
+                    
                     event.target.disabled = false;
                     setLoading(false);
                     if (tabValue == 0) {
@@ -312,6 +323,14 @@ const FiatTransationsPageCompo = (props) => {
             } else if (tabValue == 3) {
                 let body = status == 'Accepted' ? { id: transactionId, status, trackingCode } : { id: transactionId, status, confirmDescription: rejectDesc }
                 ApiCall(`/balance-transaction/confirm-withdraw`, 'PATCH', locale, body, '', 'admin', router).then(async (result) => {
+                    // Send SMS if approved
+                    if (status == 'Accepted' && currentTransaction?.user?.mobileNumber) {
+                        sendWithdrawalSMS(
+                            currentTransaction.user.mobileNumber,
+                            currentTransaction.amount
+                        ).catch(err => console.log('[SMS] Failed:', err));
+                    }
+                    
                     event.target.disabled = false;
                     setLoading(false);
                     if (tabValue == 0) {
@@ -590,12 +609,12 @@ const FiatTransationsPageCompo = (props) => {
                                                         <>
                                                             <IconButton
                                                                 color={`success`}
-                                                                onClick={tabValue == 1 ? changeTransactionStatus(data._id, 'Accepted') : handleShowChangeStatus(data._id, 'Accepted')}>
+                                                                onClick={tabValue == 1 ? changeTransactionStatus(data._id, 'Accepted') : handleShowChangeStatus(data, 'Accepted')}>
                                                                 <CheckCircleIcon />
                                                             </IconButton>
                                                             <IconButton
                                                                 color={`error`}
-                                                                onClick={handleShowChangeStatus(data._id)}>
+                                                                onClick={handleShowChangeStatus(data)}>
                                                                 <CancelIcon />
                                                             </IconButton>
                                                         </> : '----'}

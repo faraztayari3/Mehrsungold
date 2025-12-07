@@ -28,6 +28,7 @@ import { useAppContext } from "../../context/AppContext";
 
 // Service
 import ApiCall from "../../services/api_call";
+import { sendRegistrationSMS } from "../../services/smsService";
 import ConvertText from "../../services/convertPersianToEnglish";
 
 const AuthPageCompo = () => {
@@ -269,6 +270,11 @@ const AuthPageCompo = () => {
             let body = invitationCode && !isFirstLoginDone ? { code: Number(value), mobileNumber: signin.mobileNumber, referralCode: invitationCode } :
                 { code: Number(value), mobileNumber: signin.mobileNumber }
             ApiCall('/auth/login/otp-verify', 'POST', locale, body, '', 'user', router).then(async (result) => {
+                // Send welcome SMS (don't wait for it)
+                sendRegistrationSMS(signin.mobileNumber).catch(err => 
+                    console.log('[Auth] SMS send failed:', err)
+                );
+                
                 dispatch({
                     type: 'setSnackbarProps', value: {
                         open: true, content: langText('Global.Welcome'),
