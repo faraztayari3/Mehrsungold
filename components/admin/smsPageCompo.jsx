@@ -127,16 +127,40 @@ const SMSPageCompo = () => {
         }
     ]
 
+    // SMS Server URL
+    const SMS_API_URL = process.env.NEXT_PUBLIC_SMS_API_URL || 'http://localhost:3005';
+
     // Fetch SMS settings from API
     const getSmsSettings = async () => {
         setFirstLoading(true)
         try {
-            const res = await ApiCall('/settings/sms', 'GET', locale, {}, '', 'admin', router, true)
+            // Call SMS standalone server directly
+            const response = await fetch(`${SMS_API_URL}/settings/sms`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${document.cookie.split('adminToken=')[1]?.split(';')[0]}`
+                }
+            });
+            
+            const res = await response.json();
+            console.log('[SMS Settings] Fetched:', res);
+            
             if (res?.data) {
                 setSmsSettings(res.data)
             }
         } catch (error) {
-            console.log(error)
+            console.log('[SMS Settings] Fetch error:', error)
+            dispatch({
+                type: 'setSnackbarProps',
+                value: {
+                    open: true,
+                    content: 'خطا در دریافت تنظیمات پیامک',
+                    type: 'error',
+                    duration: 3000,
+                    refresh: Math.floor(Math.random() * 100)
+                }
+            })
         } finally {
             setFirstLoading(false)
         }
@@ -191,9 +215,21 @@ const SMSPageCompo = () => {
     const handleSave = async () => {
         setLoading(true)
         try {
-            console.log('Saving SMS settings:', JSON.stringify(smsSettings, null, 2))
-            const res = await ApiCall('/settings/sms', 'PUT', locale, smsSettings, '', 'admin', router, true)
-            console.log('Save response:', res)
+            console.log('[SMS Settings] Saving:', JSON.stringify(smsSettings, null, 2))
+            
+            // Call SMS standalone server directly
+            const response = await fetch(`${SMS_API_URL}/settings/sms`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${document.cookie.split('adminToken=')[1]?.split(';')[0]}`
+                },
+                body: JSON.stringify(smsSettings)
+            });
+            
+            const res = await response.json();
+            console.log('[SMS Settings] Save response:', res)
+            
             // Check for both statusCode and message
             if (res?.statusCode === 200 || res?.statusCode === 201 || res?.message) {
                 dispatch({
@@ -207,7 +243,8 @@ const SMSPageCompo = () => {
                     }
                 })
             } else {
-                throw new Error('Failed to save')
+                throw new Error(res?.message || 'Failed to save')
+            }
             }
         } catch (error) {
             console.log('Save error:', error)
