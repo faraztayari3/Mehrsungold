@@ -324,13 +324,13 @@ const AdminIndexPageCompo = (props) => {
                                     <span className="font-bold">طلای معامله شده (هفته):</span>
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-green-600">خرید:</span>
-                                        <span className="ltr">{console.log('🔴 Rendering gold buy:', weeklyMetals?.gold?.buy?.grams) || (parseFloat(weeklyMetals?.gold?.buy?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))} گرم</span>
+                                        <span className="ltr flex items-center gap-1"><span>گرم</span> {console.log('🔴 Rendering gold buy:', weeklyMetals?.gold?.buy?.grams) || (parseFloat(weeklyMetals?.gold?.buy?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))}</span>
                                     </div>
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-red-600">فروش:</span>
-                                        <span className="ltr">{(parseFloat(weeklyMetals?.gold?.sell?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))} گرم</span>
+                                        <span className="ltr flex items-center gap-1"><span>گرم</span> {(parseFloat(weeklyMetals?.gold?.sell?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))}</span>
                                     </div>
-                                    <div className="text-large-1 self-end mt-2"><span className="block text-primary-gold"><span className="ltr">{(parseFloat(weeklyMetals?.gold?.total?.milligrams || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }))}</span> میلی‌گرم</span></div>
+                                    <div className="text-large-1 self-end mt-2"><span className="block text-primary-gold ltr flex items-center gap-1"><span>گرم</span> {(parseFloat((weeklyMetals?.gold?.total?.milligrams || 0) / 1000).toLocaleString('en-US', { maximumFractionDigits: 3 }))}</span></div>
                                 </div>
                                 <LinkRouter legacyBehavior href="/admin/panel/trades">
                                     <Button href="/admin/panel/trades" variant="contained" color="warning" size="small" className="custom-btn text-black rounded-lg w-full lg:mx-auto"
@@ -348,13 +348,13 @@ const AdminIndexPageCompo = (props) => {
                                     <span className="font-bold">نقره معامله شده (هفته):</span>
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-green-600">خرید:</span>
-                                        <span className="ltr">{(parseFloat(weeklyMetals?.silver?.buy?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))} گرم</span>
+                                        <span className="ltr flex items-center gap-1"><span>گرم</span> {(parseFloat(weeklyMetals?.silver?.buy?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))}</span>
                                     </div>
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-red-600">فروش:</span>
-                                        <span className="ltr">{(parseFloat(weeklyMetals?.silver?.sell?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))} گرم</span>
+                                        <span className="ltr flex items-center gap-1"><span>گرم</span> {(parseFloat(weeklyMetals?.silver?.sell?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))}</span>
                                     </div>
-                                    <div className="text-large-1 self-end mt-2"><span className="block text-gray-400"><span className="ltr">{(parseFloat(weeklyMetals?.silver?.total?.milligrams || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }))}</span> میلی‌گرم</span></div>
+                                    <div className="text-large-1 self-end mt-2"><span className="block text-gray-400 ltr flex items-center gap-1"><span>گرم</span> {(parseFloat((weeklyMetals?.silver?.total?.milligrams || 0) / 1000).toLocaleString('en-US', { maximumFractionDigits: 3 }))}</span></div>
                                 </div>
                                 <LinkRouter legacyBehavior href="/admin/panel/trades">
                                     <Button href="/admin/panel/trades" variant="contained" color="inherit" size="small" className="custom-btn text-black rounded-lg w-full lg:mx-auto"
