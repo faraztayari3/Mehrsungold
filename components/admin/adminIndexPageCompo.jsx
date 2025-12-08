@@ -26,10 +26,7 @@ const AdminIndexPageCompo = (props) => {
     const router = useRouter();
     const { locale } = useRouter();
 
-    console.log('🔴 ADMIN INDEX COMPONENT LOADED - VERSION 2.0');
-
     useEffect(() => {
-        console.log('🔴 useEffect running, calling getWeeklyMetals');
         getDashboardInfo();
         getNewUsersInfo();
         getUsers();
@@ -96,7 +93,7 @@ const AdminIndexPageCompo = (props) => {
 
     /**
         * Retrieves Weekly Metals Info (Gold & Silver).
-        * Calculates from transaction data instead of separate endpoint
+        * Calculates from transaction data
         * @returns None
        */
     const [weeklyMetals, setWeeklyMetals] = useState({
@@ -113,119 +110,90 @@ const AdminIndexPageCompo = (props) => {
     });
     const [loadingWeeklyMetals, setLoadingWeeklyMetals] = useState(true);
     const getWeeklyMetals = () => {
-        console.log('🔴 getWeeklyMetals called!');
+        console.log('[Weekly Metals v2] Starting fetch...');
         setLoadingWeeklyMetals(true);
         
-        // Temporary test data
-        console.log('[Weekly Metals] Using test data temporarily');
-        const testData = {
-            gold: {
-                buy: { grams: '125.500', milligrams: '125500' },
-                sell: { grams: '98.750', milligrams: '98750' },
-                total: { grams: '224.250', milligrams: '224250' }
-            },
-            silver: {
-                buy: { grams: '350.250', milligrams: '350250' },
-                sell: { grams: '210.125', milligrams: '210125' },
-                total: { grams: '560.375', milligrams: '560375' }
-            }
-        };
-        console.log('🔴 Setting weeklyMetals to:', testData);
-        setWeeklyMetals(testData);
-        setLoadingWeeklyMetals(false);
-        console.log('🔴 weeklyMetals set, loading set to false');
-        return; // Stop here for testing
-        
-        // Original API code below (commented out for testing)
-        /*
         // Calculate date from 7 days ago
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        const startDate = oneWeekAgo.toISOString();
         
-        console.log('[Weekly Metals] Fetching transactions from:', startDate);
+        console.log('[Weekly Metals v2] Calling API with limit=200');
         
-        // Fetch all successful transactions from the last week
-        ApiCall('/transaction', 'GET', locale, {}, `status=Successful&startDate=${startDate}`, 'admin', router).then(async (result) => {
-            console.log('[Weekly Metals] API Response:', result);
+        // Fetch all transactions (we'll filter on client side)
+        ApiCall('/transaction', 'GET', locale, {}, `limit=200`, 'admin', router).then(async (result) => {
+            console.log('[Weekly Metals v2] API Response:', result);
             
-            if (result && result.transactions) {
-                console.log('[Weekly Metals] Total transactions:', result.transactions.length);
-                
-                // Find gold and silver tradeable IDs (you may need to adjust these based on your data)
-                const goldTransactions = result.transactions.filter(t => 
-                    t.tradeable && (t.tradeable.name === 'gold' || t.tradeable.symbol === 'Au')
-                );
-                const silverTransactions = result.transactions.filter(t => 
-                    t.tradeable && (t.tradeable.name === 'silver' || t.tradeable.symbol === 'Ag')
-                );
-                
-                console.log('[Weekly Metals] Gold transactions:', goldTransactions.length);
-                console.log('[Weekly Metals] Silver transactions:', silverTransactions.length);
-                
-                // Log first transaction to see structure
-                if (result.transactions[0]) {
-                    console.log('[Weekly Metals] Sample transaction:', result.transactions[0]);
+            try {
+                if (result && result.data && Array.isArray(result.data)) {
+                    console.log('[Weekly Metals v2] Total transactions:', result.data.length);
+                    
+                    // Filter transactions from last week with Accepted status
+                    const weeklyTransactions = result.data.filter(t => {
+                        const txDate = new Date(t.createdAt);
+                        return txDate >= oneWeekAgo && t.status === 'Accepted';
+                    });
+                    
+                    console.log('[Weekly Metals] Weekly transactions with Accepted status:', weeklyTransactions.length);
+                    
+                    // Filter by tradeable name (GOLD or SILVER)
+                    const goldTransactions = weeklyTransactions.filter(t => 
+                        t.tradeable && (t.tradeable.name?.toUpperCase() === 'GOLD' || t.tradeable.nameFa === 'طلا')
+                    );
+                    const silverTransactions = weeklyTransactions.filter(t => 
+                        t.tradeable && (t.tradeable.name?.toUpperCase() === 'SILVER' || t.tradeable.nameFa === 'نقره')
+                    );
+                    
+                    console.log('[Weekly Metals] Gold transactions:', goldTransactions.length);
+                    console.log('[Weekly Metals] Silver transactions:', silverTransactions.length);
+                    
+                    // Calculate totals (amount is already in grams)
+                    const goldBuy = goldTransactions.filter(t => t.type === 'Buy').reduce((sum, t) => sum + (t.amount || 0), 0);
+                    const goldSell = goldTransactions.filter(t => t.type === 'Sell').reduce((sum, t) => sum + (t.amount || 0), 0);
+                    const silverBuy = silverTransactions.filter(t => t.type === 'Buy').reduce((sum, t) => sum + (t.amount || 0), 0);
+                    const silverSell = silverTransactions.filter(t => t.type === 'Sell').reduce((sum, t) => sum + (t.amount || 0), 0);
+                    
+                    console.log('[Weekly Metals] Calculated:', { goldBuy, goldSell, silverBuy, silverSell });
+                    
+                    setWeeklyMetals({
+                        gold: {
+                            buy: {
+                                grams: goldBuy.toFixed(3),
+                                milligrams: (goldBuy * 1000).toFixed(0)
+                            },
+                            sell: {
+                                grams: goldSell.toFixed(3),
+                                milligrams: (goldSell * 1000).toFixed(0)
+                            },
+                            total: {
+                                grams: (goldBuy + goldSell).toFixed(3),
+                                milligrams: ((goldBuy + goldSell) * 1000).toFixed(0)
+                            }
+                        },
+                        silver: {
+                            buy: {
+                                grams: silverBuy.toFixed(3),
+                                milligrams: (silverBuy * 1000).toFixed(0)
+                            },
+                            sell: {
+                                grams: silverSell.toFixed(3),
+                                milligrams: (silverSell * 1000).toFixed(0)
+                            },
+                            total: {
+                                grams: (silverBuy + silverSell).toFixed(3),
+                                milligrams: ((silverBuy + silverSell) * 1000).toFixed(0)
+                            }
+                        }
+                    });
+                } else {
+                    console.log('[Weekly Metals] No data in response');
                 }
-                
-                // Calculate totals
-                const goldBuy = goldTransactions.filter(t => t.type === 'Buy').reduce((sum, t) => sum + (t.amount || 0), 0);
-                const goldSell = goldTransactions.filter(t => t.type === 'Sell').reduce((sum, t) => sum + (t.amount || 0), 0);
-                const silverBuy = silverTransactions.filter(t => t.type === 'Buy').reduce((sum, t) => sum + (t.amount || 0), 0);
-                const silverSell = silverTransactions.filter(t => t.type === 'Sell').reduce((sum, t) => sum + (t.amount || 0), 0);
-                
-                console.log('[Weekly Metals] Calculated:', { goldBuy, goldSell, silverBuy, silverSell });
-                
-                setWeeklyMetals({
-                    gold: {
-                        buy: {
-                            grams: goldBuy.toFixed(3),
-                            milligrams: (goldBuy * 1000).toFixed(0)
-                        },
-                        sell: {
-                            grams: goldSell.toFixed(3),
-                            milligrams: (goldSell * 1000).toFixed(0)
-                        },
-                        total: {
-                            grams: (goldBuy + goldSell).toFixed(3),
-                            milligrams: ((goldBuy + goldSell) * 1000).toFixed(0)
-                        }
-                    },
-                    silver: {
-                        buy: {
-                            grams: silverBuy.toFixed(3),
-                            milligrams: (silverBuy * 1000).toFixed(0)
-                        },
-                        sell: {
-                            grams: silverSell.toFixed(3),
-                            milligrams: (silverSell * 1000).toFixed(0)
-                        },
-                        total: {
-                            grams: (silverBuy + silverSell).toFixed(3),
-                            milligrams: ((silverBuy + silverSell) * 1000).toFixed(0)
-                        }
-                    }
-                });
-            } else {
-                console.log('[Weekly Metals] No transactions data in response');
-                // Set default empty values if no data
-                setWeeklyMetals({
-                    gold: {
-                        buy: { grams: '0.000', milligrams: '0' },
-                        sell: { grams: '0.000', milligrams: '0' },
-                        total: { grams: '0.000', milligrams: '0' }
-                    },
-                    silver: {
-                        buy: { grams: '0.000', milligrams: '0' },
-                        sell: { grams: '0.000', milligrams: '0' },
-                        total: { grams: '0.000', milligrams: '0' }
-                    }
-                });
+            } catch (err) {
+                console.error('[Weekly Metals] Error processing data:', err);
+            } finally {
+                setLoadingWeeklyMetals(false);
             }
-            setLoadingWeeklyMetals(false);
         }).catch((error) => {
             console.log('[Weekly Metals] API Error:', error);
-            // Set default values on error to prevent infinite loop
             setWeeklyMetals({
                 gold: {
                     buy: { grams: '0.000', milligrams: '0' },
@@ -239,9 +207,7 @@ const AdminIndexPageCompo = (props) => {
                 }
             });
             setLoadingWeeklyMetals(false);
-            console.log('Error fetching weekly metals:', error);
         });
-        */
     }
 
     return (
@@ -324,7 +290,7 @@ const AdminIndexPageCompo = (props) => {
                                     <span className="font-bold">طلای معامله شده (هفته):</span>
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-green-600">خرید:</span>
-                                        <span className="ltr flex items-center gap-1"><span>گرم</span> {console.log('🔴 Rendering gold buy:', weeklyMetals?.gold?.buy?.grams) || (parseFloat(weeklyMetals?.gold?.buy?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))}</span>
+                                        <span className="ltr flex items-center gap-1"><span>گرم</span> {(parseFloat(weeklyMetals?.gold?.buy?.grams || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }))}</span>
                                     </div>
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-red-600">فروش:</span>
