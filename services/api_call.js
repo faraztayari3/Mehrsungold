@@ -18,13 +18,16 @@ const ApiCall = (url, method, locale, body, query, token, router, formData) => {
     const langToken = locale || (process.env.NEXT_PUBLIC_DEFAULTLOCALE || 'fa');
 
     let response;
-    console.log(token);
+    console.log('[ApiCall] token type:', token);
     let authToken = token === 'user' ? cookies.userToken : cookies.adminToken;
+    console.log('[ApiCall] authToken present:', !!authToken, 'length:', authToken?.length || 0);
 
     let result = new Promise(async (resolve, reject) => {
         // Check if URL is absolute (starts with http:// or https://)
         const isAbsoluteUrl = url.startsWith('http://') || url.startsWith('https://');
         const finalUrl = isAbsoluteUrl ? url : `${process.env.NEXT_PUBLIC_BASEURL}${url}`;
+        
+        console.log('[ApiCall] URL:', finalUrl, 'Query:', query);
         
         if (method == 'GET' || method == 'DELETE') {
             response = await fetch(`${finalUrl}?${query ? `${query}` : ''}`, {
@@ -35,7 +38,11 @@ const ApiCall = (url, method, locale, body, query, token, router, formData) => {
                 }
             }).then(async (response) => {
                 const result = typeof response == 'object' ? await response.json() : response;
-                console.log(response, result);
+                console.log('[ApiCall] Response status:', response.status, 'Result:', {
+                    hasData: !!result?.data,
+                    dataLength: result?.data?.length,
+                    keys: Object.keys(result || {})
+                });
                 if (response.status < 300) {
                     console.log('resloved');
                     resolve(result);
