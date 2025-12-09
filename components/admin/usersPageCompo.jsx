@@ -165,11 +165,13 @@ const UsersPageCompo = (props) => {
     const [usersLimit, setUsersLimit] = useState(10);
     const [usersTotal, setUsersTotal] = useState(0);
     const [openExportDialog, setOpenExportDialog] = useState(false);
+    const [openExportDrawer, setOpenExportDrawer] = useState(false);
     const [exportDays, setExportDays] = useState(7);
     const [exportMinBalance, setExportMinBalance] = useState('');
     const [exportMaxBalance, setExportMaxBalance] = useState('');
     const [exporting, setExporting] = useState(false);
     const [openFilterDialog, setOpenFilterDialog] = useState(false);
+    const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
     const [filterMinBalance, setFilterMinBalance] = useState('');
     const [filterMaxBalance, setFilterMaxBalance] = useState('');
     const [filterRole, setFilterRole] = useState('');
@@ -661,6 +663,7 @@ const UsersPageCompo = (props) => {
             getUsers(1, 'pendings');
         }
         setOpenFilterDialog(false);
+        setOpenFilterDrawer(false);
     }
 
     const clearFilter = () => {
@@ -677,6 +680,7 @@ const UsersPageCompo = (props) => {
             }
         }, 0);
         setOpenFilterDialog(false);
+        setOpenFilterDrawer(false);
     }
 
     return (
@@ -684,12 +688,20 @@ const UsersPageCompo = (props) => {
             <div className="flex items-center justify-between">
                 <h1 className="text-large-2">کاربران</h1>
                 <div className="flex items-center gap-x-4">
-                    <Button type="button" variant="outlined" size="medium" className="rounded-lg" startIcon={<FilterListIcon />}
+                    <Button type="button" variant="outlined" size="medium" className="rounded-lg hidden md:flex" startIcon={<FilterListIcon />}
                         onClick={() => setOpenFilterDialog(true)}>
                         <text className="font-semibold">فیلتر</text>
                     </Button >
-                    <Button type="button" variant="outlined" size="medium" className="rounded-lg" 
+                    <Button type="button" variant="outlined" size="medium" className="rounded-lg flex md:hidden" startIcon={<FilterListIcon />}
+                        onClick={() => setOpenFilterDrawer(true)}>
+                        <text className="font-semibold">فیلتر</text>
+                    </Button >
+                    <Button type="button" variant="outlined" size="medium" className="rounded-lg hidden md:flex" 
                         onClick={() => setOpenExportDialog(true)}>
+                        <text className="font-semibold">خروجی اکسل</text>
+                    </Button >
+                    <Button type="button" variant="outlined" size="medium" className="rounded-lg flex md:hidden" 
+                        onClick={() => setOpenExportDrawer(true)}>
                         <text className="font-semibold">خروجی اکسل</text>
                     </Button >
                     <Button type="button" variant="contained" size="medium" className="rounded-lg" disableElevation
@@ -1499,9 +1511,16 @@ const UsersPageCompo = (props) => {
                 </SwipeableDrawer>
 
                 {/* Filter Dialog */}
-                <Dialog onClose={() => setOpenFilterDialog(false)} open={openFilterDialog} maxWidth={'sm'} fullWidth PaperProps={{ className: 'modals' }}>
+                <Dialog onClose={() => setOpenFilterDialog(false)} open={openFilterDialog} maxWidth={'sm'} fullWidth 
+                    PaperProps={{ 
+                        className: 'modals',
+                        sx: {
+                            backgroundColor: darkModeToggle ? '#1a1a1a' : 'white',
+                            backgroundImage: 'none'
+                        }
+                    }}>
                     <div className="flex flex-col gap-y-4 p-4">
-                        <h2 className="text-xl font-semibold dark:text-white">فیلتر کاربران</h2>
+                        <h2 className={`text-xl font-semibold ${darkModeToggle ? 'text-white' : 'text-black'}`}>فیلتر کاربران</h2>
                         
                         <div className="grid grid-cols-2 gap-x-4">
                             <FormControl fullWidth>
@@ -1533,9 +1552,33 @@ const UsersPageCompo = (props) => {
                                 sx={{ 
                                     border: '1px solid rgb(255, 255, 255,0.2)', 
                                     borderRadius: '16px',
-                                    '& .MuiSelect-select': { color: darkModeToggle ? 'white' : 'black' }
+                                    color: darkModeToggle ? 'white !important' : 'black !important',
+                                    '& .MuiSelect-select': { color: darkModeToggle ? 'white !important' : 'black !important' }
                                 }}
                                 className="dark:bg-dark"
+                                MenuProps={{
+                                    PaperProps: {
+                                        className: darkModeToggle ? 'dark:bg-dark-alt' : '',
+                                        sx: {
+                                            backgroundColor: darkModeToggle ? '#1a1a1a' : 'white',
+                                            '& .MuiMenuItem-root': {
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            },
+                                            '& .MuiMenuItem-root.Mui-selected': {
+                                                backgroundColor: darkModeToggle ? 'rgba(255, 255, 255, 0.1) !important' : 'rgba(0, 0, 0, 0.08) !important',
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            },
+                                            '& .MuiMenuItem-root.Mui-selected:hover': {
+                                                backgroundColor: darkModeToggle ? 'rgba(255, 255, 255, 0.15) !important' : 'rgba(0, 0, 0, 0.12) !important',
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            },
+                                            '& .MuiMenuItem-root:hover': {
+                                                backgroundColor: darkModeToggle ? 'rgba(255, 255, 255, 0.08) !important' : 'rgba(0, 0, 0, 0.04) !important',
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            }
+                                        }
+                                    }
+                                }}
                             >
                                 <MenuItem value="">همه</MenuItem>
                                 <MenuItem value="User">ساده</MenuItem>
@@ -1552,9 +1595,33 @@ const UsersPageCompo = (props) => {
                                 sx={{ 
                                     border: '1px solid rgb(255, 255, 255,0.2)', 
                                     borderRadius: '16px',
-                                    '& .MuiSelect-select': { color: darkModeToggle ? 'white' : 'black' }
+                                    color: darkModeToggle ? 'white !important' : 'black !important',
+                                    '& .MuiSelect-select': { color: darkModeToggle ? 'white !important' : 'black !important' }
                                 }}
                                 className="dark:bg-dark"
+                                MenuProps={{
+                                    PaperProps: {
+                                        className: darkModeToggle ? 'dark:bg-dark-alt' : '',
+                                        sx: {
+                                            backgroundColor: darkModeToggle ? '#1a1a1a' : 'white',
+                                            '& .MuiMenuItem-root': {
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            },
+                                            '& .MuiMenuItem-root.Mui-selected': {
+                                                backgroundColor: darkModeToggle ? 'rgba(255, 255, 255, 0.1) !important' : 'rgba(0, 0, 0, 0.08) !important',
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            },
+                                            '& .MuiMenuItem-root.Mui-selected:hover': {
+                                                backgroundColor: darkModeToggle ? 'rgba(255, 255, 255, 0.15) !important' : 'rgba(0, 0, 0, 0.12) !important',
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            },
+                                            '& .MuiMenuItem-root:hover': {
+                                                backgroundColor: darkModeToggle ? 'rgba(255, 255, 255, 0.08) !important' : 'rgba(0, 0, 0, 0.04) !important',
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            }
+                                        }
+                                    }
+                                }}
                             >
                                 <MenuItem value="">همه</MenuItem>
                                 <MenuItem value="NotVerified">احراز نشده</MenuItem>
@@ -1572,15 +1639,162 @@ const UsersPageCompo = (props) => {
                             <Button variant="text" onClick={() => setOpenFilterDialog(false)}>انصراف</Button>
                             <LoadingButton type="button" variant="contained" size="medium" className="rounded-lg" disableElevation
                                 onClick={applyFilter}>
-                                <text className="text-black font-semibold">اعمال فیلتر</text>
+                                <text className="text-white font-semibold">اعمال فیلتر</text>
                             </LoadingButton >
                         </div>
                     </div>
                 </Dialog>
 
+                {/* Filter Drawer for Mobile */}
+                <SwipeableDrawer
+                    disableBackdropTransition={true}
+                    disableDiscovery={true}
+                    disableSwipeToOpen={true}
+                    anchor={'bottom'}
+                    open={openFilterDrawer}
+                    onClose={() => setOpenFilterDrawer(false)}
+                    PaperProps={{ className: 'drawers' }}
+                    ModalProps={{
+                        keepMounted: false
+                    }}>
+                    <div className="block mb-6"><div className="puller"></div></div>
+                    <div className="flex flex-col gap-y-4">
+                        <h2 className={`text-xl font-semibold ${darkModeToggle ? 'text-white' : 'text-black'}`}>فیلتر کاربران</h2>
+                        
+                        <div className="grid grid-cols-2 gap-x-4">
+                            <FormControl fullWidth>
+                                <TextField
+                                    type="number"
+                                    label="حداقل موجودی تومان"
+                                    InputLabelProps={{ sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' } }}
+                                    InputProps={{ classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' }, sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' } }}
+                                    value={filterMinBalance}
+                                    onChange={(e) => setFilterMinBalance(e.target.value)} />
+                            </FormControl>
+                            <FormControl fullWidth>
+                                <TextField
+                                    type="number"
+                                    label="حداکثر موجودی تومان"
+                                    InputLabelProps={{ sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' } }}
+                                    InputProps={{ classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' }, sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' } }}
+                                    value={filterMaxBalance}
+                                    onChange={(e) => setFilterMaxBalance(e.target.value)} />
+                            </FormControl>
+                        </div>
+
+                        <FormControl fullWidth>
+                            <InputLabel sx={{ color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' }}>نوع حساب</InputLabel>
+                            <Select
+                                value={filterRole}
+                                label="نوع حساب"
+                                onChange={(e) => setFilterRole(e.target.value)}
+                                sx={{ 
+                                    border: '1px solid rgb(255, 255, 255,0.2)', 
+                                    borderRadius: '16px',
+                                    color: darkModeToggle ? 'white !important' : 'black !important',
+                                    '& .MuiSelect-select': { color: darkModeToggle ? 'white !important' : 'black !important' }
+                                }}
+                                className="dark:bg-dark"
+                                MenuProps={{
+                                    PaperProps: {
+                                        className: darkModeToggle ? 'dark:bg-dark-alt' : '',
+                                        sx: {
+                                            backgroundColor: darkModeToggle ? '#1a1a1a' : 'white',
+                                            '& .MuiMenuItem-root': {
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            },
+                                            '& .MuiMenuItem-root.Mui-selected': {
+                                                backgroundColor: darkModeToggle ? 'rgba(255, 255, 255, 0.1) !important' : 'rgba(0, 0, 0, 0.08) !important',
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            },
+                                            '& .MuiMenuItem-root.Mui-selected:hover': {
+                                                backgroundColor: darkModeToggle ? 'rgba(255, 255, 255, 0.15) !important' : 'rgba(0, 0, 0, 0.12) !important',
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            },
+                                            '& .MuiMenuItem-root:hover': {
+                                                backgroundColor: darkModeToggle ? 'rgba(255, 255, 255, 0.08) !important' : 'rgba(0, 0, 0, 0.04) !important',
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            }
+                                        }
+                                    }
+                                }}
+                            >
+                                <MenuItem value="">همه</MenuItem>
+                                <MenuItem value="User">ساده</MenuItem>
+                                <MenuItem value="VIPUser">ویژه</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        <FormControl fullWidth>
+                            <InputLabel sx={{ color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' }}>وضعیت احراز هویت</InputLabel>
+                            <Select
+                                value={filterVerificationStatus}
+                                label="وضعیت احراز هویت"
+                                onChange={(e) => setFilterVerificationStatus(e.target.value)}
+                                sx={{ 
+                                    border: '1px solid rgb(255, 255, 255,0.2)', 
+                                    borderRadius: '16px',
+                                    color: darkModeToggle ? 'white !important' : 'black !important',
+                                    '& .MuiSelect-select': { color: darkModeToggle ? 'white !important' : 'black !important' }
+                                }}
+                                className="dark:bg-dark"
+                                MenuProps={{
+                                    PaperProps: {
+                                        className: darkModeToggle ? 'dark:bg-dark-alt' : '',
+                                        sx: {
+                                            backgroundColor: darkModeToggle ? '#1a1a1a' : 'white',
+                                            '& .MuiMenuItem-root': {
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            },
+                                            '& .MuiMenuItem-root.Mui-selected': {
+                                                backgroundColor: darkModeToggle ? 'rgba(255, 255, 255, 0.1) !important' : 'rgba(0, 0, 0, 0.08) !important',
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            },
+                                            '& .MuiMenuItem-root.Mui-selected:hover': {
+                                                backgroundColor: darkModeToggle ? 'rgba(255, 255, 255, 0.15) !important' : 'rgba(0, 0, 0, 0.12) !important',
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            },
+                                            '& .MuiMenuItem-root:hover': {
+                                                backgroundColor: darkModeToggle ? 'rgba(255, 255, 255, 0.08) !important' : 'rgba(0, 0, 0, 0.04) !important',
+                                                color: darkModeToggle ? 'white !important' : 'black !important',
+                                            }
+                                        }
+                                    }
+                                }}
+                            >
+                                <MenuItem value="">همه</MenuItem>
+                                <MenuItem value="NotVerified">احراز نشده</MenuItem>
+                                <MenuItem value="FirstLevelVerified">احراز اولیه</MenuItem>
+                                <MenuItem value="SecondLevelVerified">احراز کامل</MenuItem>
+                                <MenuItem value="PendingFirstLevel">در انتظار احراز اولیه</MenuItem>
+                                <MenuItem value="PendingSecondLevel">در انتظار احراز کامل</MenuItem>
+                                <MenuItem value="FirstLevelRejected">رد احراز اولیه</MenuItem>
+                                <MenuItem value="SecondLevelRejected">رد احراز کامل</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        <div className="flex items-center justify-end gap-x-2">
+                            <Button variant="text" onClick={clearFilter}>پاک کردن فیلتر</Button>
+                            <Button variant="text" onClick={() => setOpenFilterDrawer(false)}>انصراف</Button>
+                            <LoadingButton type="button" variant="contained" size="medium" className="rounded-lg" disableElevation
+                                onClick={applyFilter}>
+                                <text className="text-white font-semibold">اعمال فیلتر</text>
+                            </LoadingButton >
+                        </div>
+                    </div>
+                </SwipeableDrawer>
+
                 {/* Export to Excel Dialog */}
-                <Dialog onClose={() => setOpenExportDialog(false)} open={openExportDialog} maxWidth={'sm'} fullWidth PaperProps={{ className: 'modals' }}>
+                <Dialog onClose={() => setOpenExportDialog(false)} open={openExportDialog} maxWidth={'sm'} fullWidth 
+                    PaperProps={{ 
+                        className: 'modals',
+                        sx: {
+                            backgroundColor: darkModeToggle ? '#1a1a1a' : 'white',
+                            backgroundImage: 'none'
+                        }
+                    }}>
                     <div className="flex flex-col gap-y-4 p-4">
+                        <h2 className={`text-xl font-semibold ${darkModeToggle ? 'text-white' : 'text-black'}`}>خروجی اکسل کاربران</h2>
                         <FormControl>
                             <TextField
                                 type="number"
@@ -1614,11 +1828,66 @@ const UsersPageCompo = (props) => {
                             <Button variant="text" onClick={() => setOpenExportDialog(false)}>انصراف</Button>
                             <LoadingButton type="button" variant="contained" size="medium" className="rounded-lg" disableElevation loading={exporting}
                                 onClick={exportUsers}>
-                                <text className="text-black font-semibold">خروجی اکسل</text>
+                                <text className="text-white font-semibold">خروجی اکسل</text>
                             </LoadingButton >
                         </div>
                     </div>
                 </Dialog>
+
+                {/* Export Drawer for Mobile */}
+                <SwipeableDrawer
+                    disableBackdropTransition={true}
+                    disableDiscovery={true}
+                    disableSwipeToOpen={true}
+                    anchor={'bottom'}
+                    open={openExportDrawer}
+                    onClose={() => setOpenExportDrawer(false)}
+                    onOpen={() => setOpenExportDrawer(true)}
+                    PaperProps={{ className: 'drawers' }}
+                    ModalProps={{
+                        keepMounted: false
+                    }}>
+                    <div className="block mb-6"><div className="puller"></div></div>
+                    <div className="flex flex-col gap-y-4">
+                        <h2 className={`text-xl font-semibold ${darkModeToggle ? 'text-white' : 'text-black'}`}>خروجی اکسل کاربران</h2>
+                        <FormControl>
+                            <TextField
+                                type="number"
+                                label="تعداد روز (مثال: 5)"
+                                InputLabelProps={{ sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' } }}
+                                InputProps={{ classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' }, sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' } }}
+                                value={exportDays}
+                                onChange={(e) => setExportDays(e.target.value)} />
+                        </FormControl>
+                        <div className="grid grid-cols-2 gap-x-4">
+                            <FormControl>
+                                <TextField
+                                    type="number"
+                                    label="حداقل موجودی تومان"
+                                    InputLabelProps={{ sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' } }}
+                                    InputProps={{ classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' }, sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' } }}
+                                    value={exportMinBalance}
+                                    onChange={(e) => setExportMinBalance(e.target.value)} />
+                            </FormControl>
+                            <FormControl>
+                                <TextField
+                                    type="number"
+                                    label="حداکثر موجودی تومان"
+                                    InputLabelProps={{ sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' } }}
+                                    InputProps={{ classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' }, sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' } }}
+                                    value={exportMaxBalance}
+                                    onChange={(e) => setExportMaxBalance(e.target.value)} />
+                            </FormControl>
+                        </div>
+                        <div className="flex items-center justify-end gap-x-2">
+                            <Button variant="text" onClick={() => setOpenExportDrawer(false)}>انصراف</Button>
+                            <LoadingButton type="button" variant="contained" size="medium" className="rounded-lg" disableElevation loading={exporting}
+                                onClick={() => { exportUsers(); setOpenExportDrawer(false); }}>
+                                <text className="text-white font-semibold">خروجی اکسل</text>
+                            </LoadingButton >
+                        </div>
+                    </div>
+                </SwipeableDrawer>
             </>
         </div>
     )

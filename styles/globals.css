@@ -84,7 +84,7 @@ button:disabled text {
 }
 
 .custom-box {
-  @apply w-full max-w-[22rem] bg-white border-2 border-solid border-black border-opacity-10 rounded-2xl p-7 dark:bg-dark dark:border-white;
+  @apply w-full max-w-[22rem] bg-white border-2 border-solid border-black border-opacity-10 rounded-2xl p-7 dark:bg-dark dark:border-white mx-auto;
 }
 .custom-timepicker div fieldset {
   @apply border-none shadow-none outline-none;

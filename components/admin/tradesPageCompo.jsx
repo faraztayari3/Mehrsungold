@@ -110,6 +110,7 @@ const TradesPageCompo = (props) => {
     const [transactionsLimit, settransactionsLimit] = useState(10);
     const [transactionsTotal, setTransactionsTotal] = useState(0);
     const [openExportDialog, setOpenExportDialog] = useState(false);
+    const [openExportDrawer, setOpenExportDrawer] = useState(false);
     const [exportDays, setExportDays] = useState(7);
     const [exporting, setExporting] = useState(false);
     const getTransactions = (search) => {
@@ -294,7 +295,8 @@ const TradesPageCompo = (props) => {
                 </FormControl>
             </form>
             <div className="flex items-center gap-x-4">
-                <Button variant="outlined" size="small" onClick={() => setOpenExportDialog(true)}>خروجی اکسل</Button>
+                <Button variant="outlined" size="small" className="hidden md:flex" onClick={() => setOpenExportDialog(true)}>خروجی اکسل</Button>
+                <Button variant="outlined" size="small" className="flex md:hidden" onClick={() => setOpenExportDrawer(true)}>خروجی اکسل</Button>
                 <span className="dark:text-white">تعداد کل: {loadingTransactions ? <CircularProgress color={darkModeToggle ? 'white' : 'black'} size={15} /> : (transactionsTotal || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>
             </div>
         </div>            {loadingTransactions ? <div className="flex justify-center items-center mt-16"><CircularProgress color={darkModeToggle ? 'white' : 'black'} /></div>
@@ -481,8 +483,16 @@ const TradesPageCompo = (props) => {
                 </SwipeableDrawer>
 
                 {/* Export to Excel Dialog */}
-                <Dialog onClose={() => setOpenExportDialog(false)} open={openExportDialog} maxWidth={'xs'} fullWidth PaperProps={{ className: 'modals' }}>
+                <Dialog onClose={() => setOpenExportDialog(false)} open={openExportDialog} maxWidth={'xs'} fullWidth 
+                    PaperProps={{ 
+                        className: 'modals',
+                        sx: {
+                            backgroundColor: darkModeToggle ? '#1a1a1a' : 'white',
+                            backgroundImage: 'none'
+                        }
+                    }}>
                     <div className="flex flex-col gap-y-4 p-4">
+                        <h2 className={`text-xl font-semibold ${darkModeToggle ? 'text-white' : 'text-black'}`}>خروجی اکسل معاملات</h2>
                         <FormControl>
                             <TextField
                                 type="number"
@@ -496,11 +506,46 @@ const TradesPageCompo = (props) => {
                             <Button variant="text" onClick={() => setOpenExportDialog(false)}>انصراف</Button>
                             <LoadingButton type="button" variant="contained" size="medium" className="rounded-lg" disableElevation loading={exporting}
                                 onClick={exportTrades}>
-                                <text className="text-black font-semibold">خروجی اکسل</text>
+                                <text className="text-white font-semibold">خروجی اکسل</text>
                             </LoadingButton >
                         </div>
                     </div>
                 </Dialog>
+
+                {/* Export Drawer for Mobile */}
+                <SwipeableDrawer
+                    disableBackdropTransition={true}
+                    disableDiscovery={true}
+                    disableSwipeToOpen={true}
+                    anchor={'bottom'}
+                    open={openExportDrawer}
+                    onClose={() => setOpenExportDrawer(false)}
+                    onOpen={() => setOpenExportDrawer(true)}
+                    PaperProps={{ className: 'drawers' }}
+                    ModalProps={{
+                        keepMounted: false
+                    }}>
+                    <div className="block mb-6"><div className="puller"></div></div>
+                    <div className="flex flex-col gap-y-4">
+                        <h2 className={`text-xl font-semibold ${darkModeToggle ? 'text-white' : 'text-black'}`}>خروجی اکسل معاملات</h2>
+                        <FormControl>
+                            <TextField
+                                type="number"
+                                label="تعداد روز (مثال: 5)"
+                                InputLabelProps={{ sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' } }}
+                                InputProps={{ classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' }, sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' } }}
+                                value={exportDays}
+                                onChange={(e) => setExportDays(e.target.value)} />
+                        </FormControl>
+                        <div className="flex items-center justify-end gap-x-2">
+                            <Button variant="text" onClick={() => setOpenExportDrawer(false)}>انصراف</Button>
+                            <LoadingButton type="button" variant="contained" size="medium" className="rounded-lg" disableElevation loading={exporting}
+                                onClick={() => { exportTrades(); setOpenExportDrawer(false); }}>
+                                <text className="text-white font-semibold">خروجی اکسل</text>
+                            </LoadingButton >
+                        </div>
+                    </div>
+                </SwipeableDrawer>
             </>
         </div>
     )

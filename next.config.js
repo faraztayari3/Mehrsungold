@@ -1,11 +1,14 @@
 /** @type {import('next').NextConfig} */
 
-const withPWA = require("next-pwa")({
-  dest: "public",
-  register: true,
-  skipWaiting: true,
-  sw: 'service-worker.js'
-});
+const isProd = process.env.NODE_ENV === 'production'
+const withPWA = isProd
+  ? require("next-pwa")({
+      dest: "public",
+      register: true,
+      skipWaiting: true,
+      sw: 'service-worker.js'
+    })
+  : (config) => config
 
 const nextConfig = withPWA({
   reactStrictMode: false,

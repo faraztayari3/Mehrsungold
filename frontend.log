@@ -1,0 +1,69 @@
+
+> gold-trade@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3001
+  - Environments: .env.local, .env.development
+
+ ✓ Starting...
+ ✓ Ready in 1789ms
+ ✓ Compiled /middleware in 235ms (73 modules)
+ ○ Compiling /admin/auth ...
+ ✓ Compiled /admin/auth in 2.3s (1458 modules)
+ GET /admin/auth 200 in 2639ms
+ ✓ Compiled /admin/panel in 378ms (1464 modules)
+ GET /_next/data/development/fa/admin/panel.json 200 in 495ms
+ ○ Compiling /admin/panel/users ...
+ ✓ Compiled /admin/panel/users in 659ms (1698 modules)
+ GET /_next/data/development/fa/admin/panel/users.json 200 in 686ms
+ ✓ Compiled in 668ms (1695 modules)
+ ✓ Compiled in 397ms (1695 modules)
+ GET /_next/data/development/fa/admin/panel.json 200 in 79ms
+ ○ Compiling /404 ...
+ ✓ Compiled /404 in 1334ms (1701 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 1417ms
+ GET /_next/data/development/fa/admin/panel/users.json 200 in 68ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 20ms
+ ✓ Compiled in 772ms (1695 modules)
+ ✓ Compiled in 486ms (1695 modules)
+ ✓ Compiled in 782ms (1695 modules)
+ ✓ Compiled in 482ms (1695 modules)
+ ✓ Compiled in 431ms (1695 modules)
+ ✓ Compiled in 427ms (1695 modules)
+ ✓ Compiled in 394ms (1469 modules)
+ ✓ Compiled in 344ms (1469 modules)
+ ✓ Compiled in 263ms (1469 modules)
+ ✓ Compiled in 459ms (1469 modules)
+ ✓ Compiled in 282ms (1469 modules)
+ ✓ Compiled in 285ms (1469 modules)
+ GET /admin/panel/users 200 in 225ms
+ ○ Compiling /404 ...
+ ✓ Compiled /404 in 1074ms (1701 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 1108ms
+ GET /admin/panel/users 200 in 45ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 31ms
+ ✓ Compiled in 625ms (1469 modules)
+ ✓ Compiled in 423ms (1469 modules)
+ ✓ Compiled in 279ms (1469 modules)
+ GET /admin/panel/users 200 in 133ms
+ ✓ Compiled /404 in 473ms (1701 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 518ms
+ ✓ Compiled in 1019ms (1695 modules)
+ ○ Compiling /admin/auth ...
+ ✓ Compiled /admin/auth in 748ms (1698 modules)
+ GET /_next/data/development/fa/admin/auth.json 200 in 836ms
+ GET /_next/data/development/fa/admin/panel.json 200 in 1248ms
+ ✓ Compiled in 1574ms (1698 modules)
+ GET /_next/data/development/fa/admin/panel/users.json 200 in 129ms
+ ✓ Compiled in 536ms (1698 modules)
+ ✓ Compiled in 556ms (1698 modules)
+ ✓ Compiled in 490ms (1698 modules)
+ ✓ Compiled /admin/panel/trades in 288ms (1703 modules)
+ GET /_next/data/development/fa/admin/panel/trades.json 200 in 416ms
+ GET /_next/data/development/fa/admin/panel/users.json 200 in 59ms
+ ✓ Compiled /admin/panel/sms in 447ms (1719 modules)
+ GET /_next/data/development/fa/admin/panel/sms.json 200 in 724ms
+ ○ Compiling /admin/panel/sms/advanced ...
+ ✓ Compiled /admin/panel/sms/advanced in 2.3s (3242 modules)
+ GET /_next/data/development/fa/admin/panel/sms/advanced.json 200 in 2387ms

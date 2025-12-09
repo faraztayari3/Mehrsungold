@@ -20,26 +20,30 @@ export const AppWrapper = ({ children }) => {
         return { state, dispatch };
     }, [state, dispatch]);
 
-    useEffect(async () => {
-        const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BASEURL}/settings/public-settings`,
-            {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
-            }
-        )
+    useEffect(() => {
+        const fetchSettings = async () => {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_BASEURL}/settings/public-settings`,
+                {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                }
+            )
 
-        const result = await response.json();
-        dispatch({
-            type: "setSiteInfo",
-            value: result
-        });
-        if (!cookies.userToken) {
+            const result = await response.json();
             dispatch({
-                type: "setLoginStatus",
-                value: false
+                type: "setSiteInfo",
+                value: result
             });
+            if (!cookies.userToken) {
+                dispatch({
+                    type: "setLoginStatus",
+                    value: false
+                });
+            }
         }
+
+        fetchSettings();
     }, [noRefresh]);
 
     useEffect(() => {

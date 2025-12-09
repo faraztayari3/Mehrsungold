@@ -16,50 +16,79 @@ const AuthPageLayout = ({ children }) => {
     const { siteInfo, darkModeToggle, snackbarProps } = state;
 
     useEffect(() => {
+        // Apply dark mode class and persist preference without re-dispatching
         if (darkModeToggle) {
             localStorage.setItem('dark', true);
-            document.querySelector("html").classList.add("dark");
-            dispatch({ type: "setDarkModeToggle", value: true });
+            document.querySelector("html")?.classList.add("dark");
         } else {
             localStorage.setItem('dark', false);
-            document.querySelector("html").classList.remove("dark");
-            dispatch({ type: "setDarkModeToggle", value: false });
+            document.querySelector("html")?.classList.remove("dark");
         }
     }, [darkModeToggle]);
 
+    // Fix mobile viewport height issues (address bar hiding) by setting --vh on mount
+    useEffect(() => {
+        const setVh = () => {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        setVh();
+        window.addEventListener('resize', setVh);
+        return () => window.removeEventListener('resize', setVh);
+    }, []);
+
     return (
         <>
-            <main dir="rtl">
-                <div className="w-screen h-screen relative">
-                    <div className="flex flex-col lg:grid grid-cols-12 lg:items-center relative h-full">
-                        <div className="auth-banner-section relative col-span-12 lg:col-span-6 xl:col-span-4 bg-light-secondary-foreground dark:bg-dark-secondary h-fit lg:h-full lg:flex flex-col items-center justify-center">
-                            <div className="h-full flex flex-col items-center justify-center gap-y-16 mx-7">
-                                <div className="flex flex-col items-center gap-y-16 lg:py-8">
-                                    <LinkRouter legacyBehavior href="/">
-                                        <Link href="/" className="text-large-1 lg:text-large-3 flex lg:flex-col items-center gap-x-4 gap-y-4 my-2 lg:my-0">
-                                            <img crossOrigin="anonymous" src={`${process.env.NEXT_PUBLIC_BASEURL}${darkModeToggle ? siteInfo?.darkIconImage : siteInfo?.lightIconImage}`} alt="icon" className="svgr lg:w-[8rem] h-14 lg:h-[8rem] text-black dark:text-white" />
-                                            <img crossOrigin="anonymous" src={`${process.env.NEXT_PUBLIC_BASEURL}${darkModeToggle ? siteInfo?.darkLogoImage : siteInfo?.lightLogoImage}`} className="svgr lg:w-[7rem] h-10 lg:h-[5rem] text-black dark:text-white" />
-                                        </Link>
-                                    </LinkRouter>
-                                    <span className="hidden lg:block text-center">    </span>
-                                </div>
-                                <img src="/assets/img/svg/auth-svg.svg" alt="auth-svg" className="h-80 hidden lg:block absolute bottom-0 right-[80%] w-52" />
-                            </div>
+            <main
+                dir="rtl"
+                style={{
+                    backgroundColor: '#085e5c',
+                    minHeight: '100vh',
+                    width: '100vw',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    boxSizing: 'border-box',
+                    padding: 0,
+                    margin: 0
+                }}
+            >
+                <div
+                    style={{
+                        minHeight: 'calc(var(--vh, 1vh) * 100)',
+                        width: '100%',
+                        maxWidth: '30rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: '#085e5c',
+                        padding: '1.25rem 1rem',
+                        gap: '1.25rem',
+                        boxSizing: 'border-box',
+                        margin: '0 auto'
+                    }}
+                >
+                    {/* Make logo non-clickable to avoid accidental navigation/reloads on mobile */}
+                    {siteInfo && (siteInfo.darkIconImage || siteInfo.lightIconImage) && (
+                        <div className="flex flex-col items-center gap-y-4" style={{ pointerEvents: 'none' }}>
+                            <img
+                                crossOrigin="anonymous"
+                                src={`${process.env.NEXT_PUBLIC_BASEURL}${siteInfo?.darkIconImage || siteInfo?.lightIconImage}`}
+                                alt="icon"
+                                style={{ width: '9rem', height: '9rem', display: 'block' }}
+                            />
+                            <img
+                                crossOrigin="anonymous"
+                                src={`${process.env.NEXT_PUBLIC_BASEURL}${siteInfo?.darkLogoImage || siteInfo?.lightLogoImage}`}
+                                alt="logo"
+                                style={{ width: '9rem', height: '9rem', display: 'block' }}
+                            />
                         </div>
-                        <div id="auth-scroll" className="col-span-12 lg:col-span-6 xl:col-span-8 h-full flex flex-col items-center justify-center dark:bg-dark-alt">
-                            <div className="flex justify-center mb-6">
-                                <Image 
-                                    src="/assets/img/logo.svg" 
-                                    alt="Mehrsun Gold Logo" 
-                                    width={150} 
-                                    height={150}
-                                    priority
-                                />
-                            </div>
-                            {children}
-                
-                        </div>
-                    </div>
+                    )}
+
+                    {children}
                 </div>
             </main>
 

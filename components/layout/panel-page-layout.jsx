@@ -551,19 +551,35 @@ const PanelPageLayout = ({ children }) => {
                                 vertical: 'top',
                                 horizontal: 'center',
                             }}
-                            slotProps={{ paper: { className: 'bg-light-secondary-foreground dark:bg-dark-alt rounded-2xl' } }}
+                            slotProps={{ 
+                                paper: { 
+                                    className: 'bg-light-secondary-foreground dark:bg-dark-alt rounded-2xl',
+                                    sx: {
+                                        '& .MuiButton-root': {
+                                            color: darkModeToggle ? 'white' : 'black',
+                                        },
+                                        '& .MuiButton-root:hover': {
+                                            backgroundColor: darkModeToggle ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)',
+                                            color: darkModeToggle ? 'white' : 'black',
+                                        },
+                                        '& .MuiListItemText-root': {
+                                            color: darkModeToggle ? 'white' : 'black',
+                                        }
+                                    }
+                                } 
+                            }}
                         >
                             <List color={darkModeToggle ? 'white' : 'black'}>
                                 <ListItem disablePadding>
                                     <LinkRouter legacyBehavior href="/panel/profile">
-                                        <Button href="/panel/profile" variant="text" color={darkModeToggle ? 'white' : 'black'} className={`w-full p-[8px_16px] ${router.pathname == '/panel/profile' ? 'pointer-events-none' : ''}`}
+                                        <Button href="/panel/profile" variant="text" className={`w-full p-[8px_16px] ${router.pathname == '/panel/profile' ? 'pointer-events-none' : ''}`}
                                             onClick={() => setAnchorEl(null)}>
                                             <ListItemText>پروفایل کاربری</ListItemText>
                                         </Button>
                                     </LinkRouter>
                                 </ListItem>
                                 <ListItem disablePadding>
-                                    <Button variant="text" color={darkModeToggle ? 'white' : 'black'} className="w-full p-[8px_16px]" onClick={signout}>
+                                    <Button variant="text" className="w-full p-[8px_16px]" onClick={signout}>
                                         <ListItemText>خروج از حساب</ListItemText>
                                     </Button>
                                 </ListItem>
@@ -587,7 +603,10 @@ const PanelPageLayout = ({ children }) => {
                 sx={{
                     display: { xs: 'block', md: 'none' }
                 }}
-                PaperProps={{ className: 'bg-light-secondary-foreground dark:bg-dark-alt overflow-x-hidden' }}>
+                PaperProps={{ 
+                    className: 'overflow-x-hidden',
+                    sx: { backgroundColor: '#013833' }
+                }}>
                 {drawer}
             </SwipeableDrawer>
             <Drawer
@@ -600,7 +619,10 @@ const PanelPageLayout = ({ children }) => {
                 variant="persistent"
                 anchor="left"
                 open={open}
-                PaperProps={{ className: 'bg-light-secondary-foreground dark:bg-dark-alt overflow-x-hidden' }}>
+                PaperProps={{ 
+                    className: 'overflow-x-hidden',
+                    sx: { backgroundColor: '#013833' }
+                }}>
 
                 {drawer}
             </Drawer>

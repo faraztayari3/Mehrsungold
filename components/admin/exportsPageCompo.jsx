@@ -411,7 +411,7 @@ const ExportsPageCompo = (props) => {
                 <h1 className="text-2xl md:text-large-2">تاریخچه خروجی ها</h1>
                 <div className="flex items-center gap-x-4">
                     <Button type="button" variant="contained" size="medium" className="rounded-lg" disableElevation onClick={handleShowAddExports}>
-                        <text className="text-black font-semibold">خروجی جدید</text>
+                        <text className="text-white font-semibold">خروجی جدید</text>
                     </Button >
                 </div>
             </section>
@@ -849,7 +849,7 @@ const ExportsPageCompo = (props) => {
                         </div>
                         <div className="col-span-12 text-end">
                             <LoadingButton type="submit" variant="contained" size="medium" className="rounded-lg" disableElevation loading={loading}>
-                                <text className="text-black font-semibold">گرفتن خروجی</text>
+                                <text className="text-white font-semibold">گرفتن خروجی</text>
                             </LoadingButton>
                         </div>
                     </form>

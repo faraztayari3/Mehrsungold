@@ -248,10 +248,21 @@ const AdminPageLayout = ({ children }) => {
             ]
         },
         {
-            show: true, title: 'پیامک', href: '/admin/panel/sms', icon: <svg width="24" height="24" viewBox="0 0 24 24" className="svg-icon text-black dark:text-white">
+            show: true, title: 'پیامک', hasSubMenu: true, href: '', icon: <svg width="24" height="24" viewBox="0 0 24 24" className="svg-icon text-black dark:text-white">
                 <path d="M17 20.75H7C3.35 20.75 1.25 18.65 1.25 15V9C1.25 5.35 3.35 3.25 7 3.25H17C20.65 3.25 22.75 5.35 22.75 9V15C22.75 18.65 20.65 20.75 17 20.75ZM7 4.75C4.14 4.75 2.75 6.14 2.75 9V15C2.75 17.86 4.14 19.25 7 19.25H17C19.86 19.25 21.25 17.86 21.25 15V9C21.25 6.14 19.86 4.75 17 4.75H7Z" fill="currentColor"/>
                 <path d="M12 12.87C11.16 12.87 10.31 12.61 9.66 12.08L6.53 9.57997C6.21 9.31997 6.15 8.84997 6.41 8.52997C6.67 8.20997 7.14 8.14997 7.46 8.40997L10.59 10.91C11.35 11.52 12.64 11.52 13.4 10.91L16.53 8.40997C16.85 8.14997 17.33 8.19997 17.58 8.52997C17.84 8.84997 17.79 9.32997 17.46 9.57997L14.33 12.08C13.69 12.61 12.84 12.87 12 12.87Z" fill="currentColor"/>
-            </svg>
+            </svg>,
+            subMenuItems: [
+                {
+                    show: true, title: 'تنظیمات پیامک', href: '/admin/panel/sms'
+                },
+                {
+                    show: true, title: 'پیامک پیشرفته', href: '/admin/panel/sms/advanced'
+                },
+                {
+                    show: true, title: 'گزارش پیامک‌ها', href: '/admin/panel/sms/logs'
+                }
+            ]
         },
         {
             show: true, title: 'تنظیمات', hasSubMenu: true, href: '', icon: <svg viewBox="0 0 24 24" className="svg-icon text-black dark:text-white"><path d="M8.238 1.744a6.504 6.504 0 0 0-6.494 6.494.749.749 0 0 0 1.498 0 5 5 0 0 1 3.61-4.801L6.24 4.529a.75.75 0 1 0 1.307.73l1.344-2.4a.75.75 0 0 0-.652-1.114zm6.492 1.484c-3.145 0-5.745 2.421-6.035 5.492-3.067.294-5.48 2.892-5.48 6.033 0 3.337 2.725 6.064 6.062 6.064 3.145 0 5.742-2.421 6.031-5.492 3.068-.293 5.484-2.893 5.484-6.035 0-3.337-2.725-6.062-6.063-6.062zm0 2.002a4.044 4.044 0 0 1 4.064 4.061c0 2.105-1.593 3.764-3.637 3.982a6.051 6.051 0 0 0-1.316-2.502 3.242 3.242 0 0 0-.273-.315 3.263 3.263 0 0 0-.338-.292 6.044 6.044 0 0 0-2.48-1.287c.212-2.05 1.87-3.647 3.98-3.647zm-5.453 5.463c.085 0 .183.008.314.016a4.056 4.056 0 0 1 3.738 3.738c.002.12.007.23.007.306a4.044 4.044 0 0 1-4.06 4.064 4.047 4.047 0 0 1-4.065-4.064 4.044 4.044 0 0 1 4.064-4.06zm12.23 4.32a.749.749 0 0 0-.746.748 5 5 0 0 1-3.61 4.801l.612-1.092a.75.75 0 1 0-1.308-.73l-1.342 2.4a.75.75 0 0 0 .653 1.114 6.504 6.504 0 0 0 6.494-6.494.75.75 0 0 0-.752-.748z"></path></svg>,
@@ -321,7 +332,7 @@ const AdminPageLayout = ({ children }) => {
                                                     ) : ''}
                                                     {data.hasSubMenu ? <div className={`${data.hasSubMenu && openSubMenus[data.title] ? 'rotate-180' : ''} transition`}>
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="8" viewBox="0 0 14 8" fill="none">
-                                                            <path d="M12.8337 1.08331L7.00033 6.91665L1.16699 1.08331" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                                            <path d="M12.8337 1.08331L7.00033 6.91665L1.16699 1.08331" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                                         </svg>
                                                     </div> : ''}
                                                 </div>
@@ -344,7 +355,7 @@ const AdminPageLayout = ({ children }) => {
                                                                 <ListItemText className="text-start *:text-sm *:flex *:items-center *:gap-x-2 *:w-full rtl:mr-8 ltr:ml-8">
                                                                     <div className={`rotate-90 w-3 h-3`}>
                                                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="8" viewBox="0 0 14 8" fill="none" className="w-full h-full">
-                                                                            <path d="M12.8337 1.08331L7.00033 6.91665L1.16699 1.08331" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                                                            <path d="M12.8337 1.08331L7.00033 6.91665L1.16699 1.08331" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                                                         </svg>
                                                                     </div>
                                                                     {subItem.title}
@@ -559,7 +570,10 @@ const AdminPageLayout = ({ children }) => {
                 sx={{
                     display: { xs: 'block', md: 'none' }
                 }}
-                PaperProps={{ className: 'bg-light-secondary-foreground dark:bg-dark-alt overflow-x-hidden' }}>
+                PaperProps={{ 
+                    className: 'overflow-x-hidden',
+                    sx: { backgroundColor: '#013833' }
+                }}>
                 {drawer}
             </SwipeableDrawer>
             <Drawer
@@ -572,7 +586,10 @@ const AdminPageLayout = ({ children }) => {
                 variant="persistent"
                 anchor="left"
                 open={open}
-                PaperProps={{ className: 'bg-light-secondary-foreground dark:bg-dark-alt overflow-x-hidden' }}>
+                PaperProps={{ 
+                    className: 'overflow-x-hidden',
+                    sx: { backgroundColor: '#013833' }
+                }}>
 
                 {drawer}
             </Drawer>
