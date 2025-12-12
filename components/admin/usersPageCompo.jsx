@@ -148,13 +148,11 @@ const UsersPageCompo = (props) => {
     ]
 
     const [pageItem, setPageItem] = useState(1);
+    const [searchUsers, setSearchUsers] = useState('');
     // Sorting state: sortBy matches backend field name, sortOrder: 0 or 1 (backend expects numeric)
     const [sortBy, setSortBy] = useState('createdAt');
     const [sortOrder, setSortOrder] = useState(0);
     const [firstLoading, setFirstLoading] = useState(true);
-    useEffect(() => {
-        getUsers(1, '');
-    }, []);
 
     /**
         * Retrieves Users.
@@ -176,27 +174,29 @@ const UsersPageCompo = (props) => {
     const [filterMaxBalance, setFilterMaxBalance] = useState('');
     const [filterRole, setFilterRole] = useState('');
     const [filterVerificationStatus, setFilterVerificationStatus] = useState('');
+    const [filterTrigger, setFilterTrigger] = useState(0);
+    const [tabValue, setTabValue] = useState(0);
     const getUsers = (page, status, search) => {
         setLoadingUsers(true);
         let queryParams = `${search ? `search=${search}&` : ''}${status ? `verificationStatus=PendingFirstLevel&verificationStatus=PendingSecondLevel&` : ''}`;
-        
+
         // Add role filter
         if (filterRole) {
             queryParams += `roles=${filterRole}&`;
         } else {
             queryParams += `roles=User&roles=VIPUser&`;
         }
-        
+
         // Add verification status filter
         if (filterVerificationStatus) {
             queryParams += `verificationStatus=${filterVerificationStatus}&`;
         }
-        
+
         queryParams += `sortOrder=${sortOrder}&sortBy=${sortBy}&limit=${usersLimit}&skip=${(page * usersLimit) - usersLimit}`;
-        
+
         ApiCall('/user', 'GET', locale, {}, queryParams, 'admin', router).then(async (result) => {
             let filteredData = result.data;
-            
+
             // Apply balance filter on client side
             if (filterMinBalance || filterMaxBalance) {
                 const minBal = parseFloat(filterMinBalance) || 0;
@@ -206,7 +206,7 @@ const UsersPageCompo = (props) => {
                     return balance >= minBal && balance <= maxBal;
                 });
             }
-            
+
             setUsersTotal(filteredData.length);
             setUsers(filteredData);
             setUsersTotal(result.count);
@@ -220,6 +220,12 @@ const UsersPageCompo = (props) => {
         });
     }
 
+    useEffect(() => {
+        const status = tabValue === 0 ? '' : 'pendings';
+        getUsers(pageItem, status, searchUsers);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageItem, searchUsers, sortBy, sortOrder, tabValue, filterTrigger]);
+
     // Generic toggle sort for any backend field
     const toggleSortBy = (fieldName, defaultOrder = 1) => {
         if (sortBy === fieldName) {
@@ -228,36 +234,17 @@ const UsersPageCompo = (props) => {
             setSortBy(fieldName);
             setSortOrder(defaultOrder);
         }
-        // reload users from first page with new sort
         setPageItem(1);
-        // give state a tick, then call getUsers using updated state in next tick
-        setTimeout(() => {
-            if (tabValue == 0) {
-                getUsers(1, '');
-            } else {
-                getUsers(1, 'pendings');
-            }
-        }, 0);
     }
 
-    const [tabValue, setTabValue] = useState(0);
     const handleChange = (event, newTabValue) => {
         setTabValue(newTabValue);
         setPageItem(1);
-        if (newTabValue == 0) {
-            getUsers(1, '');
-        } else if (newTabValue == 1) {
-            getUsers(1, 'pendings');
-        }
+        setSearchUsers('');
     }
 
     const handlePageChange = (event, value) => {
         setPageItem(value);
-        if (tabValue == 0) {
-            getUsers(value, '');
-        } else if (tabValue == 1) {
-            getUsers(value, 'pendings');
-        }
     }
 
     const [showAddUser, setShowAddUser] = useState(false);
@@ -519,7 +506,6 @@ const UsersPageCompo = (props) => {
      * @param {{Event}} event - The event object triggered by the search input.
      * @returns None
      */
-    const [searchUsers, setSearchUsers] = useState('');
     var typingTimerUsers;
     const doneTypingIntervalUsers = 300;
     const searchUsersItems = (event) => {
@@ -529,11 +515,9 @@ const UsersPageCompo = (props) => {
             if (event.target.value == '') {
                 setSearchUsers('');
                 setPageItem(1);
-                getUsers(1, tabValue == 0 ? '' : 'pendings', '');
             } else {
                 setSearchUsers(event.target.value);
                 setPageItem(1);
-                getUsers(1, tabValue == 0 ? '' : 'pendings', event.target.value);
             }
         }, doneTypingIntervalUsers);
 
@@ -657,11 +641,7 @@ const UsersPageCompo = (props) => {
 
     const applyFilter = () => {
         setPageItem(1);
-        if (tabValue == 0) {
-            getUsers(1, '');
-        } else {
-            getUsers(1, 'pendings');
-        }
+        setFilterTrigger(prev => prev + 1);
         setOpenFilterDialog(false);
         setOpenFilterDrawer(false);
     }
@@ -672,13 +652,7 @@ const UsersPageCompo = (props) => {
         setFilterRole('');
         setFilterVerificationStatus('');
         setPageItem(1);
-        setTimeout(() => {
-            if (tabValue == 0) {
-                getUsers(1, '');
-            } else {
-                getUsers(1, 'pendings');
-            }
-        }, 0);
+        setFilterTrigger(prev => prev + 1);
         setOpenFilterDialog(false);
         setOpenFilterDrawer(false);
     }

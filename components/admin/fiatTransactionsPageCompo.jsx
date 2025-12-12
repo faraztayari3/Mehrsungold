@@ -23,6 +23,8 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Pagination from '@mui/material/Pagination';
 import moment from 'jalali-moment'
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 import { PatternFormat } from 'react-number-format';
 
@@ -59,7 +61,9 @@ const FiatTransationsPageCompo = (props) => {
         },
         {
             label: 'مقدار',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'amount',
+            defaultOrder: 1
         },
         {
             label: 'کارت مبدا',
@@ -67,7 +71,9 @@ const FiatTransationsPageCompo = (props) => {
         },
         {
             label: 'تاریخ ثبت',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'createdAt',
+            defaultOrder: 0
         },
         {
             label: 'وضعیت',
@@ -85,7 +91,9 @@ const FiatTransationsPageCompo = (props) => {
         },
         {
             label: 'مقدار',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'amount',
+            defaultOrder: 1
         },
         {
             label: 'کارت مبدا',
@@ -101,7 +109,9 @@ const FiatTransationsPageCompo = (props) => {
         },
         {
             label: 'تاریخ ثبت',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'createdAt',
+            defaultOrder: 0
         },
         {
             label: 'وضعیت',
@@ -115,7 +125,9 @@ const FiatTransationsPageCompo = (props) => {
         },
         {
             label: 'مقدار',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'amount',
+            defaultOrder: 1
         },
         {
             label: 'کد رهگیری',
@@ -123,7 +135,9 @@ const FiatTransationsPageCompo = (props) => {
         },
         {
             label: 'تاریخ ثبت',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'createdAt',
+            defaultOrder: 0
         },
         {
             label: 'وضعیت',
@@ -137,7 +151,9 @@ const FiatTransationsPageCompo = (props) => {
         },
         {
             label: 'مقدار',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'amount',
+            defaultOrder: 1
         },
         {
             label: tabValue == 0 ? 'کارت مبدا' : 'کارت مقصد',
@@ -149,7 +165,9 @@ const FiatTransationsPageCompo = (props) => {
         },
         {
             label: 'تاریخ ثبت',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'createdAt',
+            defaultOrder: 0
         },
         {
             label: 'وضعیت',
@@ -163,9 +181,9 @@ const FiatTransationsPageCompo = (props) => {
 
     const [pageItem, setPageItem] = useState(1);
     const [firstLoading, setFirstLoading] = useState(true);
-    useEffect(() => {
-        getTransactions('OnlineDeposit');
-    }, []);
+    const [sortBy, setSortBy] = useState('createdAt');
+    const [sortOrder, setSortOrder] = useState(0);
+    const transactionTypes = ['OnlineDeposit', 'OfflineDeposit', 'IdDeposit', 'Withdraw'];
 
     /**
         * Retrieves Transactions.
@@ -181,7 +199,7 @@ const FiatTransationsPageCompo = (props) => {
     const [exporting, setExporting] = useState(false);
     const getTransactions = (type, search) => {
         setLoadingTransactions(true);
-        ApiCall('/balance-transaction', 'GET', locale, {}, `${search ? `search=${search}&` : ''}sortOrder=0&sortBy=createdAt&type=${type}&limit=${transactionsLimit}&skip=${(pageItem * transactionsLimit) - transactionsLimit}`, 'admin', router).then(async (result) => {
+        ApiCall('/balance-transaction', 'GET', locale, {}, `${search ? `search=${search}&` : ''}sortOrder=${sortOrder}&sortBy=${sortBy}&type=${type}&limit=${transactionsLimit}&skip=${(pageItem * transactionsLimit) - transactionsLimit}`, 'admin', router).then(async (result) => {
             setTransactionsTotal(result.count);
             setTransactions(result.data);
             setLoadingTransactions(false);
@@ -196,28 +214,13 @@ const FiatTransationsPageCompo = (props) => {
     const handleChange = (event, newTabValue) => {
         setTabValue(newTabValue);
         setSearchTransactions('');
-        if (newTabValue == 0) {
-            getTransactions('OnlineDeposit');
-        } else if (newTabValue == 1) {
-            getTransactions('OfflineDeposit');
-        } else if (newTabValue == 2) {
-            getTransactions('IdDeposit');
-        } else {
-            getTransactions('Withdraw');
-        }
+        setSortBy('createdAt');
+        setSortOrder(0);
+        setPageItem(1);
     }
 
     const handlePageChange = (event, value) => {
         setPageItem(value);
-        if (tabValue == 0) {
-            getTransactions('OnlineDeposit');
-        } else if (tabValue == 1) {
-            getTransactions('OfflineDeposit');
-        } else if (tabValue == 2) {
-            getTransactions('IdDeposit');
-        } else {
-            getTransactions('Withdraw');
-        }
     }
 
     /**
@@ -235,17 +238,47 @@ const FiatTransationsPageCompo = (props) => {
             if (event.target.value == '') {
                 setSearchTransactions('');
                 setPageItem(1);
-                getTransactions(tabValue == 0 ? 'OnlineDeposit' : tabValue == 1 ? 'OfflineDeposit' : tabValue == 2 ? 'IdDeposit' : 'Withdraw', '');
             } else {
                 setSearchTransactions(event.target.value);
                 setPageItem(1);
-                getTransactions(tabValue == 0 ? 'OnlineDeposit' : tabValue == 1 ? 'OfflineDeposit' : tabValue == 2 ? 'IdDeposit' : 'Withdraw', event.target.value);
             }
         }, doneTypingIntervalTransactions);
 
     }
     const searchTransactionsItemsHandler = () => {
         clearTimeout(typingTimerTransactions)
+    }
+
+    const toggleSortBy = (fieldName, defaultOrder = 1) => {
+        if (!fieldName) return;
+        if (sortBy === fieldName) {
+            setSortOrder(prev => 1 - prev);
+        } else {
+            setSortBy(fieldName);
+            setSortOrder(defaultOrder);
+        }
+        setPageItem(1);
+    }
+
+    useEffect(() => {
+        const type = transactionTypes[tabValue] || 'OnlineDeposit';
+        getTransactions(type, searchTransactions);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageItem, searchTransactions, sortBy, sortOrder, tabValue]);
+
+    const renderHeader = (data) => {
+        const isActive = sortBy === data.field;
+        return (
+            <div className={`flex items-center gap-x-2 ${data.field ? 'cursor-pointer select-none' : ''}`} onClick={() => data.field && toggleSortBy(data.field, data.defaultOrder || 1)}>
+                <span className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</span>
+                {data.field ? (
+                    <span className="flex flex-col leading-[10px] text-xs">
+                        <ArrowUpwardIcon fontSize="inherit" className={`${isActive && sortOrder === 1 ? 'text-primary' : 'text-gray-400'}`} />
+                        <ArrowDownwardIcon fontSize="inherit" className={`${isActive && sortOrder === 0 ? 'text-primary' : 'text-gray-400'}`} />
+                    </span>
+                ) : null}
+            </div>
+        );
     }
 
     const [showChangeStatus, setShowChangeStatus] = useState(false);
@@ -539,22 +572,22 @@ const FiatTransationsPageCompo = (props) => {
                                         <TableRow>
                                             {tabValue == 0 ? ONLINE_DEPOSITS_TABLE_HEAD.map((data, index) => (
                                                 <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-center pb-4`} key={index}>
-                                                    <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                                    {renderHeader(data)}
                                                 </TableCell>
                                             )) : ''}
                                             {tabValue == 1 ? OFFLINE_DEPOSITS_TABLE_HEAD.map((data, index) => (
                                                 <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-center pb-4`} key={index}>
-                                                    <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                                    {renderHeader(data)}
                                                 </TableCell>
                                             )) : ''}
                                             {tabValue == 2 ? ID_DEPOSITS_TABLE_HEAD.map((data, index) => (
                                                 <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-center pb-4`} key={index}>
-                                                    <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                                    {renderHeader(data)}
                                                 </TableCell>
                                             )) : ''}
                                             {tabValue == 3 ? WITHDRAWS_TABLE_HEAD.map((data, index) => (
                                                 <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-end pb-4`} key={index}>
-                                                    <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                                    {renderHeader(data)}
                                                 </TableCell>
                                             )) : ''}
                                         </TableRow>

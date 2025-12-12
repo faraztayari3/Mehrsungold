@@ -23,6 +23,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircleOutline'
 import IconButton from '@mui/material/IconButton';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import moment from 'jalali-moment'
 
 // Translations
@@ -58,26 +60,33 @@ const WalletsPageCompo = (props) => {
         },
         {
             label: 'نوع',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'blocked',
+            defaultOrder: 1
         },
         {
             label: 'موجودی',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'balance',
+            defaultOrder: 1
         },
         {
             label: 'تاریخ ثبت',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'createdAt',
+            defaultOrder: 0
         },
         {
             label: 'آخرین ویرایش',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'updatedAt',
+            defaultOrder: 0
         }
     ]
 
     const [pageItem, setPageItem] = useState(1);
-    useEffect(() => {
-        getWallets(1, '');
-    }, []);
+    const [sortBy, setSortBy] = useState('createdAt');
+    const [sortOrder, setSortOrder] = useState(0);
 
     /**
         * Retrieves Wallets.
@@ -87,9 +96,10 @@ const WalletsPageCompo = (props) => {
     const [loadingWallets, setLoadingWallets] = useState(true);
     const [walletsLimit, setWalletsLimit] = useState(10);
     const [walletsTotal, setWalletsTotal] = useState(0);
+    const [searchWallets, setSearchWallets] = useState('');
     const getWallets = (page, search) => {
         setLoadingWallets(true);
-        ApiCall('/tradeable/user-inventory', 'GET', locale, {}, `${search ? `search=${search}&` : ''}sortOrder=0&sortBy=createdAt&limit=${walletsLimit}&skip=${(page * walletsLimit) - walletsLimit}`, 'admin', router).then(async (result) => {
+        ApiCall('/tradeable/user-inventory', 'GET', locale, {}, `${search ? `search=${search}&` : ''}sortOrder=${sortOrder}&sortBy=${sortBy}&limit=${walletsLimit}&skip=${(page * walletsLimit) - walletsLimit}`, 'admin', router).then(async (result) => {
             setWalletsTotal(result.count);
             setWallets(result.data);
             setLoadingWallets(false);
@@ -99,9 +109,13 @@ const WalletsPageCompo = (props) => {
         });
     }
 
+    useEffect(() => {
+        getWallets(pageItem, searchWallets);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageItem, searchWallets, sortBy, sortOrder]);
+
     const handlePageChange = (event, value) => {
         setPageItem(value);
-        getWallets(value, '');
     }
 
     /**
@@ -109,7 +123,6 @@ const WalletsPageCompo = (props) => {
      * @param {{Event}} event - The event object triggered by the search input.
      * @returns None
      */
-    const [searchWallets, setSearchWallets] = useState('');
     var typingTimerWallets;
     const doneTypingIntervalWallets = 300;
     const searchWalletsItems = (event) => {
@@ -118,16 +131,42 @@ const WalletsPageCompo = (props) => {
         typingTimerWallets = setTimeout(() => {
             if (event.target.value == '') {
                 setSearchWallets('');
-                getWallets(1, '');
+                setPageItem(1);
             } else {
                 setSearchWallets(event.target.value);
-                getWallets(1, event.target.value);
+                setPageItem(1);
             }
         }, doneTypingIntervalWallets);
 
     }
     const searchWalletsItemsHandler = () => {
         clearTimeout(typingTimerWallets)
+    }
+
+    const toggleSortBy = (fieldName, defaultOrder = 1) => {
+        if (!fieldName) return;
+        if (sortBy === fieldName) {
+            setSortOrder(prev => 1 - prev);
+        } else {
+            setSortBy(fieldName);
+            setSortOrder(defaultOrder);
+        }
+        setPageItem(1);
+    }
+
+    const renderHeader = (data) => {
+        const isActive = sortBy === data.field;
+        return (
+            <div className={`flex items-center gap-x-2 ${data.field ? 'cursor-pointer select-none' : ''}`} onClick={() => data.field && toggleSortBy(data.field, data.defaultOrder || 1)}>
+                <span className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</span>
+                {data.field ? (
+                    <span className="flex flex-col leading-[10px] text-xs">
+                        <ArrowUpwardIcon fontSize="inherit" className={`${isActive && sortOrder === 1 ? 'text-primary' : 'text-gray-400'}`} />
+                        <ArrowDownwardIcon fontSize="inherit" className={`${isActive && sortOrder === 0 ? 'text-primary' : 'text-gray-400'}`} />
+                    </span>
+                ) : null}
+            </div>
+        );
     }
 
     return (
@@ -165,7 +204,7 @@ const WalletsPageCompo = (props) => {
                                 <TableRow>
                                     {WALLETS_TABLE_HEAD.map((data, index) => (
                                         <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-end pb-4`} key={index}>
-                                            <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                            {renderHeader(data)}
                                         </TableCell>
                                     ))}
                                 </TableRow>

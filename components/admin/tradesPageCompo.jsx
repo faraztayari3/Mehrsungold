@@ -25,6 +25,8 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Pagination from '@mui/material/Pagination';
 import moment from 'jalali-moment'
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 // Translations
 import { useTranslations } from 'next-intl'
@@ -64,31 +66,45 @@ const TradesPageCompo = (props) => {
         },
         {
             label: 'نوع معامله',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'type',
+            defaultOrder: 1
         },
         {
             label: 'مقدار',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'amount',
+            defaultOrder: 1
         },
         {
             label: 'مبلغ معامله',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'total',
+            defaultOrder: 1
         },
         {
             label: 'قیمت معامله',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'tradeablePrice',
+            defaultOrder: 1
         },
         {
             label: 'کارمزد',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'wage',
+            defaultOrder: 1
         },
         {
             label: 'تاریخ ثبت',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'createdAt',
+            defaultOrder: 0
         },
         {
             label: 'وضعیت',
-            classes: ""
+            classes: "cursor-pointer",
+            field: 'status',
+            defaultOrder: 1
         },
         {
             label: '',
@@ -97,9 +113,8 @@ const TradesPageCompo = (props) => {
     ]
 
     const [pageItem, setPageItem] = useState(1);
-    useEffect(() => {
-        getTransactions();
-    }, []);
+    const [sortBy, setSortBy] = useState('createdAt');
+    const [sortOrder, setSortOrder] = useState(0);
 
     /**
         * Retrieves Transactions.
@@ -115,7 +130,7 @@ const TradesPageCompo = (props) => {
     const [exporting, setExporting] = useState(false);
     const getTransactions = (search) => {
         setLoadingTransactions(true);
-        ApiCall('/transaction', 'GET', locale, {}, `${search ? `search=${search}&` : ''}sortOrder=0&sortBy=createdAt&limit=${transactionsLimit}&skip=${(pageItem * transactionsLimit) - transactionsLimit}`, 'admin', router).then(async (result) => {
+        ApiCall('/transaction', 'GET', locale, {}, `${search ? `search=${search}&` : ''}sortOrder=${sortOrder}&sortBy=${sortBy}&limit=${transactionsLimit}&skip=${(pageItem * transactionsLimit) - transactionsLimit}`, 'admin', router).then(async (result) => {
             setTransactionsTotal(result.count);
             setTransactions(result.data);
             setLoadingTransactions(false);
@@ -127,7 +142,6 @@ const TradesPageCompo = (props) => {
 
     const handlePageChange = (event, value) => {
         setPageItem(value);
-        getTransactions();
     }
 
     /**
@@ -145,17 +159,46 @@ const TradesPageCompo = (props) => {
             if (event.target.value == '') {
                 setSearchTransactions('');
                 setPageItem(1);
-                getTransactions('');
             } else {
                 setSearchTransactions(event.target.value);
                 setPageItem(1);
-                getTransactions(event.target.value);
             }
         }, doneTypingIntervalTransactions);
 
     }
     const searchTransactionsItemsHandler = () => {
         clearTimeout(typingTimerTransactions)
+    }
+
+    const toggleSortBy = (fieldName, defaultOrder = 1) => {
+        if (!fieldName) return;
+        if (sortBy === fieldName) {
+            setSortOrder(prev => 1 - prev);
+        } else {
+            setSortBy(fieldName);
+            setSortOrder(defaultOrder);
+        }
+        setPageItem(1);
+    }
+
+    useEffect(() => {
+        getTransactions(searchTransactions);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageItem, searchTransactions, sortBy, sortOrder]);
+
+    const renderHeader = (data) => {
+        const isActive = sortBy === data.field;
+        return (
+            <div className={`flex items-center gap-x-2 ${data.field ? 'cursor-pointer select-none' : ''}`} onClick={() => data.field && toggleSortBy(data.field, data.defaultOrder || 1)}>
+                <span className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</span>
+                {data.field ? (
+                    <span className="flex flex-col leading-[10px] text-xs">
+                        <ArrowUpwardIcon fontSize="inherit" className={`${isActive && sortOrder === 1 ? 'text-primary' : 'text-gray-400'}`} />
+                        <ArrowDownwardIcon fontSize="inherit" className={`${isActive && sortOrder === 0 ? 'text-primary' : 'text-gray-400'}`} />
+                    </span>
+                ) : null}
+            </div>
+        );
     }
 
     const [showReject, setShowReject] = useState(false);
@@ -309,7 +352,7 @@ const TradesPageCompo = (props) => {
                                     <TableRow>
                                         {TRANSACTIONS_TABLE_HEAD.map((data, index) => (
                                             <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-end pb-4`} key={index}>
-                                                <div className="text-base font-medium whitespace-nowrap dark:text-white">{data.label}</div>
+                                                {renderHeader(data)}
                                             </TableCell>
                                         ))}
                                     </TableRow>
