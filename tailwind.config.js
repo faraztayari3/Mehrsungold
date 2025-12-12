@@ -12,6 +12,10 @@ module.exports = {
     "./node_modules/@material-tailwind/react/components/**/*.{js,ts,jsx,tsx}",
     "./node_modules/@material-tailwind/react/theme/components/**/*.{js,ts,jsx,tsx}",
   ],
+  safelist: [
+    'bg-dark-alt',
+    'bg-light-gray',
+  ],
   // important: '__next',
   theme: {
     container: {
@@ -68,7 +72,7 @@ module.exports = {
         'primary': '#ffc300',
         'gold': '#ffd60a',
         'dark': '#001413ff',
-        'dark-alt': '#012f38',
+        'dark-alt': '#013833',
         'dark-secondary': '#067470c7',
         'secondary-primary': '#fcaf17',
         'secondary': '#7979f2',

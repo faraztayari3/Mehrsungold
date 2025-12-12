@@ -117,8 +117,8 @@ export default function App({ Component, pageProps }) {
         display: "standalone",
         scope: `${window.location.origin}`,
         start_url: `${window.location.origin}`,
-        short_name: siteInfo?.title,
-        name: siteInfo?.title,
+        short_name: "مهرسان گلد",
+        name: "مهرسان گلد",
         icons: [
           {
             "src": `${process.env.NEXT_PUBLIC_BASEURL}${siteInfo?.lightIconImage}`,

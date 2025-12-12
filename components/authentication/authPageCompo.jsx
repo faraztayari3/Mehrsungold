@@ -384,6 +384,7 @@ const AuthPageCompo = () => {
 
     return (
         <div className="custom-box">
+            {/* لوگوی بالایی مخفی شده */}
             {codesection ?
                 <form className="flex flex-col gap-y-4" noValidate onSubmit={verifyUser}>
                     <h1 className="text-large-2 mb-2">ورود</h1>

@@ -571,8 +571,7 @@ const AdminPageLayout = ({ children }) => {
                     display: { xs: 'block', md: 'none' }
                 }}
                 PaperProps={{ 
-                    className: 'overflow-x-hidden',
-                    sx: { backgroundColor: '#013833' }
+                    className: darkModeToggle ? 'overflow-x-hidden bg-dark-alt' : 'overflow-x-hidden bg-light-gray'
                 }}>
                 {drawer}
             </SwipeableDrawer>
@@ -587,8 +586,7 @@ const AdminPageLayout = ({ children }) => {
                 anchor="left"
                 open={open}
                 PaperProps={{ 
-                    className: 'overflow-x-hidden',
-                    sx: { backgroundColor: '#013833' }
+                    className: darkModeToggle ? 'overflow-x-hidden bg-dark-alt' : 'overflow-x-hidden bg-light-gray'
                 }}>
 
                 {drawer}

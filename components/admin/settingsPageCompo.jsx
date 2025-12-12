@@ -320,6 +320,7 @@ const SettingsPageCompo = () => {
             "lightLogoImage",
             "darkIconImage",
             "darkLogoImage",
+            "faviconImage",
             "frontAppBaseUrl",
             "userLevelingPeriod",
             "userLeveling",
@@ -434,6 +435,8 @@ const SettingsPageCompo = () => {
                         setSettings({ ...settings, darkIconImage: result.fileUrl });
                     } if (type == 'darkLogoImage') {
                         setSettings({ ...settings, darkLogoImage: result.fileUrl });
+                    } if (type == 'faviconImage') {
+                        setSettings({ ...settings, faviconImage: result.fileUrl });
                     } if (type == 'factorSignatureImage') {
                         setSettings({ ...settings, factorSignatureImage: result.fileUrl });
                     }
@@ -2119,6 +2122,32 @@ const SettingsPageCompo = () => {
                                             endAdornment: <IconButton color={darkModeToggle ? 'white' : 'black'} onClick={openItemImageFile('darkLogoImage')}>
                                                 {settings?.darkLogoImage ?
                                                     <img crossOrigin="anonymous" src={`${process.env.NEXT_PUBLIC_BASEURL}${settings?.darkLogoImage}`} alt={'darkLogoImage'}
+                                                        className="w-6 h-6" /> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none" className={darkModeToggle ? 'text-white' : 'text-black'}>
+                                                        <path opacity="0.4" d="M16.19 2.5H7.82001C4.18001 2.5 2.01001 4.67 2.01001 8.31V16.68C2.01001 20.32 4.18001 22.49 7.82001 22.49H16.19C19.83 22.49 22 20.32 22 16.68V8.31C22 4.67 19.83 2.5 16.19 2.5Z" fill="currentColor" />
+                                                        <path d="M12.2 17.8799C11.5 17.8799 10.79 17.6099 10.26 17.0799C9.74001 16.5599 9.45001 15.8699 9.45001 15.1399C9.45001 14.4099 9.74001 13.7099 10.26 13.1999L11.67 11.7899C11.96 11.4999 12.44 11.4999 12.73 11.7899C13.02 12.0799 13.02 12.5599 12.73 12.8499L11.32 14.2599C11.08 14.4999 10.95 14.8099 10.95 15.1399C10.95 15.4699 11.08 15.7899 11.32 16.0199C11.81 16.5099 12.6 16.5099 13.09 16.0199L15.31 13.7999C16.58 12.5299 16.58 10.4699 15.31 9.19994C14.04 7.92994 11.98 7.92994 10.71 9.19994L8.28998 11.6199C7.77998 12.1299 7.5 12.7999 7.5 13.5099C7.5 14.2199 7.77998 14.8999 8.28998 15.3999C8.57998 15.6899 8.57998 16.1699 8.28998 16.4599C7.99998 16.7499 7.51998 16.7499 7.22998 16.4599C6.43998 15.6699 6.01001 14.6199 6.01001 13.4999C6.01001 12.3799 6.43998 11.3299 7.22998 10.5399L9.65002 8.11992C11.5 6.26992 14.52 6.26992 16.37 8.11992C18.22 9.96992 18.22 12.9899 16.37 14.8399L14.15 17.0599C13.61 17.6099 12.91 17.8799 12.2 17.8799Z" fill="currentColor" />
+                                                    </svg>}
+                                            </IconButton>
+                                        }}
+                                        value={''} />
+                                </FormControl>
+                            </div>
+                            <div className="col-span-12 md:col-span-6">
+                                <FormControl className="w-full">
+                                    <input type="file" id="faviconImage" className="hidden" onChange={uploadItemImage('faviconImage')} />
+                                    <TextField type="text" id="account" className="form-input cursor-default"
+                                        disabled
+                                        label="انتخاب Favicon"
+                                        InputLabelProps={{
+                                            classes: { disabled: darkModeToggle ? '!text-white !text-opacity-70' : '!text-black !text-opacity-70' },
+                                            sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' }
+                                        }}
+                                        InputProps={{
+                                            classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-end text-white' : 'text-end text-black', focused: 'border-none' },
+                                            sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' },
+                                            readOnly: true,
+                                            endAdornment: <IconButton color={darkModeToggle ? 'white' : 'black'} onClick={openItemImageFile('faviconImage')}>
+                                                {settings?.faviconImage ?
+                                                    <img crossOrigin="anonymous" src={`${process.env.NEXT_PUBLIC_BASEURL}${settings?.faviconImage}`} alt={'faviconImage'}
                                                         className="w-6 h-6" /> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none" className={darkModeToggle ? 'text-white' : 'text-black'}>
                                                         <path opacity="0.4" d="M16.19 2.5H7.82001C4.18001 2.5 2.01001 4.67 2.01001 8.31V16.68C2.01001 20.32 4.18001 22.49 7.82001 22.49H16.19C19.83 22.49 22 20.32 22 16.68V8.31C22 4.67 19.83 2.5 16.19 2.5Z" fill="currentColor" />
                                                         <path d="M12.2 17.8799C11.5 17.8799 10.79 17.6099 10.26 17.0799C9.74001 16.5599 9.45001 15.8699 9.45001 15.1399C9.45001 14.4099 9.74001 13.7099 10.26 13.1999L11.67 11.7899C11.96 11.4999 12.44 11.4999 12.73 11.7899C13.02 12.0799 13.02 12.5599 12.73 12.8499L11.32 14.2599C11.08 14.4999 10.95 14.8099 10.95 15.1399C10.95 15.4699 11.08 15.7899 11.32 16.0199C11.81 16.5099 12.6 16.5099 13.09 16.0199L15.31 13.7999C16.58 12.5299 16.58 10.4699 15.31 9.19994C14.04 7.92994 11.98 7.92994 10.71 9.19994L8.28998 11.6199C7.77998 12.1299 7.5 12.7999 7.5 13.5099C7.5 14.2199 7.77998 14.8999 8.28998 15.3999C8.57998 15.6899 8.57998 16.1699 8.28998 16.4599C7.99998 16.7499 7.51998 16.7499 7.22998 16.4599C6.43998 15.6699 6.01001 14.6199 6.01001 13.4999C6.01001 12.3799 6.43998 11.3299 7.22998 10.5399L9.65002 8.11992C11.5 6.26992 14.52 6.26992 16.37 8.11992C18.22 9.96992 18.22 12.9899 16.37 14.8399L14.15 17.0599C13.61 17.6099 12.91 17.8799 12.2 17.8799Z" fill="currentColor" />

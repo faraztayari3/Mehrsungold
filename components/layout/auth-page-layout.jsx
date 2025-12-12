@@ -70,15 +70,9 @@ const AuthPageLayout = ({ children }) => {
                         margin: '0 auto'
                     }}
                 >
-                    {/* Make logo non-clickable to avoid accidental navigation/reloads on mobile */}
-                    {siteInfo && (siteInfo.darkIconImage || siteInfo.lightIconImage) && (
+                    {/* فقط لوگوی متنی نمایش داده میشه */}
+                    {siteInfo && (siteInfo.darkLogoImage || siteInfo.lightLogoImage) && (
                         <div className="flex flex-col items-center gap-y-4" style={{ pointerEvents: 'none' }}>
-                            <img
-                                crossOrigin="anonymous"
-                                src={`${process.env.NEXT_PUBLIC_BASEURL}${siteInfo?.darkIconImage || siteInfo?.lightIconImage}`}
-                                alt="icon"
-                                style={{ width: '9rem', height: '9rem', display: 'block' }}
-                            />
                             <img
                                 crossOrigin="anonymous"
                                 src={`${process.env.NEXT_PUBLIC_BASEURL}${siteInfo?.darkLogoImage || siteInfo?.lightLogoImage}`}
