@@ -111,6 +111,24 @@ export default function App({ Component, pageProps }) {
       console.log('start');
       setRefresh(false);
       const manifestElement = document.getElementById("manifest");
+      const baseUrl = process.env.NEXT_PUBLIC_BASEURL || '';
+      const iconPath = siteInfo?.lightIconImage;
+      const iconSrc = baseUrl && iconPath ? `${baseUrl}${iconPath}` : null;
+      const icons = iconSrc
+        ? [
+          {
+            src: iconSrc,
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: iconSrc,
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+        : [];
+
       const manifestString = JSON.stringify({
         theme_color: "#ffc300",
         background_color: "#ffc300",
@@ -119,18 +137,7 @@ export default function App({ Component, pageProps }) {
         start_url: `${window.location.origin}`,
         short_name: "مهرسان گلد",
         name: "مهرسان گلد",
-        icons: [
-          {
-            "src": `${process.env.NEXT_PUBLIC_BASEURL}${siteInfo?.lightIconImage}`,
-            "sizes": "192x192",
-            "type": "image/png"
-          },
-          {
-            "src": `${process.env.NEXT_PUBLIC_BASEURL}${siteInfo?.lightIconImage}`,
-            "sizes": "512x512",
-            "type": "image/png"
-          }
-        ]
+        icons,
       });
       manifestElement?.setAttribute(
         "href",

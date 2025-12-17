@@ -2,8 +2,9 @@
  * SMS Service - Send SMS notifications via standalone SMS server
  */
 
-// SMS Server URL - در production باید به URL واقعی تغییر کنه
-const SMS_API_URL = process.env.NEXT_PUBLIC_SMS_API_URL || 'http://localhost:3005';
+// SMS Server URL
+// In production we should not default to localhost (it causes Workbox/no-response spam and slows the panel).
+const SMS_API_URL = process.env.NEXT_PUBLIC_SMS_API_URL || process.env.NEXT_PUBLIC_BASEURL || '';
 
 /**
  * Send registration welcome SMS
@@ -11,6 +12,7 @@ const SMS_API_URL = process.env.NEXT_PUBLIC_SMS_API_URL || 'http://localhost:300
  */
 export const sendRegistrationSMS = async (mobileNumber) => {
     try {
+        if (!SMS_API_URL) return { statusCode: 400, message: 'SMS_API_URL is not configured' };
         console.log('[SMS] Sending registration SMS to:', mobileNumber);
         
         const response = await fetch(`${SMS_API_URL}/sms/send/registration`, {
@@ -44,6 +46,7 @@ export const sendRegistrationSMS = async (mobileNumber) => {
  */
 export const sendDepositSMS = async (mobileNumber, amount) => {
     try {
+        if (!SMS_API_URL) return { statusCode: 400, message: 'SMS_API_URL is not configured' };
         console.log('[SMS] Sending deposit SMS to:', mobileNumber, 'Amount:', amount);
         
         const response = await fetch(`${SMS_API_URL}/sms/send/deposit`, {
@@ -76,6 +79,7 @@ export const sendDepositSMS = async (mobileNumber, amount) => {
  */
 export const sendWithdrawalSMS = async (mobileNumber, amount) => {
     try {
+        if (!SMS_API_URL) return { statusCode: 400, message: 'SMS_API_URL is not configured' };
         console.log('[SMS] Sending withdrawal SMS to:', mobileNumber, 'Amount:', amount);
         
         const response = await fetch(`${SMS_API_URL}/sms/send/withdrawal`, {
@@ -106,6 +110,7 @@ export const sendWithdrawalSMS = async (mobileNumber, amount) => {
  */
 export const checkSMSServiceHealth = async () => {
     try {
+        if (!SMS_API_URL) return { status: 'DISABLED', message: 'SMS_API_URL is not configured' };
         const response = await fetch(`${SMS_API_URL}/health`);
         const result = await response.json();
         console.log('[SMS] Service health:', result);

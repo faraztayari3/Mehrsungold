@@ -24,7 +24,7 @@ import {
     MenuItem
 } from '@mui/material'
 
-const SMS_API_URL = process.env.NEXT_PUBLIC_SMS_API_URL || 'http://localhost:3005'
+const SMS_API_URL = process.env.NEXT_PUBLIC_SMS_API_URL || process.env.NEXT_PUBLIC_BASEURL || ''
 
 const SmsLogsPageCompo = () => {
     const { dispatch } = useAppContext()

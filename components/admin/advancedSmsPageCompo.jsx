@@ -29,7 +29,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import PauseIcon from '@mui/icons-material/Pause'
 import ScheduledSmsFormDialog from './scheduledSmsFormDialog'
 
-const SMS_API_URL = process.env.NEXT_PUBLIC_SMS_API_URL || 'http://localhost:3005'
+const SMS_API_URL = process.env.NEXT_PUBLIC_SMS_API_URL || process.env.NEXT_PUBLIC_BASEURL || ''
 
 const AdvancedSmsPageCompo = () => {
     const { dispatch } = useAppContext()

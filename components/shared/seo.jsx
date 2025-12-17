@@ -22,6 +22,10 @@ const Seo = ({ title, description, keywords, pageUrl, metaIndex }) => {
     const langText = useTranslations('');
     const { locale } = useRouter();
 
+    const baseUrl = process.env.NEXT_PUBLIC_BASEURL || '';
+    const iconPath = siteInfo?.lightIconImage;
+    const iconUrl = baseUrl && iconPath ? `${baseUrl}${iconPath}` : null;
+
     /**
      * Generates the HTML head section for a web page with various meta tags and links.
      * @param {{string}} title - The title of the page.
@@ -49,15 +53,15 @@ const Seo = ({ title, description, keywords, pageUrl, metaIndex }) => {
             <meta property="og:site_name" content={siteInfo ? siteInfo.siteName : langText('Seo.SiteName')} />
             <meta property="og:brand" content={siteInfo ? siteInfo.siteName : langText('Seo.SiteName')} />
             <meta property="og:locale" content={locale} />
-            <meta crossOrigin="anonymous" property="og:image" content={siteInfo ? `${process.env.NEXT_PUBLIC_BASEURL}${siteInfo.lightIconImage}` : '/favicon.ico'} />
+            <meta crossOrigin="anonymous" property="og:image" content={iconUrl || '/favicon.ico'} />
             {/* <meta name="twitter:card" content="summary" />
             <meta name="twitter:site" content="@viraasrcom" />
             <meta name="twitter:title" content={title} />
             <meta name="twitter:description" content={description} /> */}
-            <link crossOrigin="anonymous" rel="icon" href={siteInfo ? `${process.env.NEXT_PUBLIC_BASEURL}${siteInfo?.lightIconImage}?v=1` : '/favicon.ico?v=1'} />
-            <link crossOrigin="anonymous" rel="icon" type="image/png" sizes="32x32" href={siteInfo ? `${process.env.NEXT_PUBLIC_BASEURL}${siteInfo?.lightIconImage}?v=1` : '/favicon.ico?v=1'} />
-            <link crossOrigin="anonymous" rel="icon" type="image/png" sizes="16x16" href={siteInfo ? `${process.env.NEXT_PUBLIC_BASEURL}${siteInfo?.lightIconImage}?v=1` : '/favicon.ico?v=1'} />
-            <link crossOrigin="anonymous" rel="apple-touch-icon" href={siteInfo ? `${process.env.NEXT_PUBLIC_BASEURL}${siteInfo?.lightIconImage}` : '/favicon.ico?v=1'} />
+            <link crossOrigin="anonymous" rel="icon" href={iconUrl ? `${iconUrl}?v=1` : '/favicon.ico?v=1'} />
+            <link crossOrigin="anonymous" rel="icon" type="image/png" sizes="32x32" href={iconUrl ? `${iconUrl}?v=1` : '/favicon.ico?v=1'} />
+            <link crossOrigin="anonymous" rel="icon" type="image/png" sizes="16x16" href={iconUrl ? `${iconUrl}?v=1` : '/favicon.ico?v=1'} />
+            <link crossOrigin="anonymous" rel="apple-touch-icon" href={iconUrl || '/favicon.ico?v=1'} />
 
             <meta name="apple-mobile-web-app-capable" content="yes" />
         </Head>

@@ -67,3 +67,91 @@
  ○ Compiling /admin/panel/sms/advanced ...
  ✓ Compiled /admin/panel/sms/advanced in 2.3s (3242 modules)
  GET /_next/data/development/fa/admin/panel/sms/advanced.json 200 in 2387ms
+ ○ Compiling /auth ...
+ ✓ Compiled /auth in 2.4s (3080 modules)
+ GET /auth 200 in 2509ms
+ ✓ Compiled /404 in 299ms (3086 modules)
+ GET /_next/static/8rVL1zzcU-lcu1bEZnsS6/_buildManifest.js 404 in 348ms
+ ✓ Compiled /admin/auth in 170ms (3069 modules)
+ GET /admin/auth 200 in 211ms
+ GET /_next/static/8rVL1zzcU-lcu1bEZnsS6/_buildManifest.js 404 in 19ms
+ ○ Compiling /admin/panel ...
+ ✓ Compiled /admin/panel in 525ms (3075 modules)
+ GET /_next/data/development/fa/admin/panel.json 200 in 653ms
+ ○ Compiling /admin/panel/sms/logs ...
+ ✓ Compiled /admin/panel/sms/logs in 1056ms (3076 modules)
+ GET /_next/data/development/fa/admin/panel/sms/logs.json 200 in 1096ms
+ ✓ Compiled /admin/panel/sms in 299ms (3090 modules)
+ GET /_next/data/development/fa/admin/panel/sms.json 200 in 347ms
+ GET /_next/static/8rVL1zzcU-lcu1bEZnsS6/_buildManifest.js 404 in 30ms
+ ✓ Compiled in 3.5s (1327 modules)
+ ✓ Compiled in 389ms (1963 modules)
+ ✓ Compiled in 170ms (1327 modules)
+ ✓ Compiled in 243ms (1327 modules)
+ ○ Compiling /auth ...
+ ✓ Compiled /auth in 1329ms (2002 modules)
+ GET /auth 200 in 1398ms
+ ✓ Compiled /404 in 276ms (2008 modules)
+ GET /_next/static/8rVL1zzcU-lcu1bEZnsS6/_buildManifest.js 404 in 319ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 20ms
+ GET /auth 200 in 35ms
+ GET /auth 200 in 28ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 3ms
+ GET /auth 200 in 14ms
+ GET /admin/panel/sms 200 in 569ms
+ ○ Compiling /admin/auth ...
+ ✓ Compiled /admin/auth in 1933ms (1963 modules)
+ ✓ Compiled /404 in 266ms (1969 modules)
+ GET /_next/static/8rVL1zzcU-lcu1bEZnsS6/_buildManifest.js 404 in 410ms
+ GET /_next/data/development/fa/admin/auth.json 200 in 2357ms
+ ✓ Compiled in 591ms (1281 modules)
+ ○ Compiling /panel ...
+ ✓ Compiled /panel in 2.5s (1899 modules)
+ GET /_next/data/development/fa/panel.json 200 in 2624ms
+ ✓ Compiled in 1974ms (1890 modules)
+ ✓ Compiled in 411ms (1321 modules)
+ ✓ Compiled in 770ms (1877 modules)
+ ✓ Compiled in 769ms (1877 modules)
+ ✓ Compiled in 563ms (1877 modules)
+ ✓ Compiled in 767ms (1877 modules)
+ ✓ Compiled in 1204ms (1877 modules)
+ ✓ Compiled in 4.5s (1877 modules)
+ GET /_next/data/development/fa/panel.json 200 in 129ms
+ ✓ Compiled in 585ms (1877 modules)
+ ✓ Compiled in 1358ms (1877 modules)
+ ✓ Compiled in 420ms (1321 modules)
+ ✓ Compiled in 409ms (1877 modules)
+ GET /_next/data/development/fa/panel.json 200 in 239ms
+ ○ Compiling /auth ...
+ ✓ Compiled /auth in 2.5s (1890 modules)
+ GET /_next/data/development/fa/auth.json 200 in 2595ms
+ GET /admin/auth 200 in 22ms
+ ○ Compiling /404 ...
+ ✓ Compiled /404 in 1599ms (1896 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 1853ms
+ GET /_next/static/8rVL1zzcU-lcu1bEZnsS6/_buildManifest.js 404 in 14ms
+ ○ Compiling /admin/panel ...
+ ✓ Compiled /admin/panel in 980ms (1902 modules)
+ GET /_next/data/development/fa/admin/panel.json 200 in 963ms
+ ○ Compiling /admin/panel/settings ...
+ ✓ Compiled /admin/panel/settings in 1196ms (1975 modules)
+ GET /_next/data/development/fa/admin/panel/settings.json 200 in 1255ms
+ ✓ Compiled in 2.8s (1581 modules)
+ ✓ Compiled in 431ms (1581 modules)
+ ✓ Compiled in 322ms (1581 modules)
+ ✓ Compiled in 282ms (1581 modules)
+ GET /_next/data/development/fa/admin/panel/settings.json 200 in 126ms
+ ○ Compiling /admin/auth ...
+ ✓ Compiled /admin/auth in 1344ms (1586 modules)
+ GET /_next/data/development/fa/admin/auth.json 200 in 1316ms
+ GET /_next/data/development/fa/admin/panel.json 200 in 277ms
+ GET /admin/auth 200 in 111ms
+ GET /_next/data/development/fa/admin/auth.json 200 in 111ms
+ ○ Compiling /404 ...
+ ✓ Compiled /404 in 1666ms (1502 modules)
+ GET /_next/static/8rVL1zzcU-lcu1bEZnsS6/_buildManifest.js 404 in 1771ms
+ ○ Compiling /admin/panel/sms ...
+ ✓ Compiled /admin/panel/sms in 2.8s (1523 modules)
+ GET /_next/data/development/fa/admin/panel/sms.json 200 in 2564ms
+ GET /_next/data/development/fa/admin/auth.json 200 in 27ms
+ GET /_next/data/development/fa/admin/panel.json 200 in 143ms

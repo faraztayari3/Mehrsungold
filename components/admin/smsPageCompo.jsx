@@ -34,7 +34,7 @@ const SMSPageCompo = () => {
         filtered: ['[نام]', '[نام خانوادگی]', '[سطح]', '[موجودی]']
     }
 
-    const SMS_API_URL = process.env.NEXT_PUBLIC_SMS_API_URL || 'http://localhost:3005'
+    const SMS_API_URL = process.env.NEXT_PUBLIC_SMS_API_URL || process.env.NEXT_PUBLIC_BASEURL || ''
 
     const updateSection = (section, key, value) => {
         setSmsSettings((prev) => ({
@@ -63,6 +63,7 @@ const SMSPageCompo = () => {
     const getSmsSettings = async () => {
         setFirstLoading(true)
         try {
+            if (!SMS_API_URL) throw new Error('SMS_API_URL is not configured')
             const response = await fetch(`${SMS_API_URL}/settings/sms`, {
                 method: 'GET',
                 headers: {
@@ -107,7 +108,7 @@ const SMSPageCompo = () => {
                 type: 'setSnackbarProps',
                 value: {
                     open: true,
-                    content: 'خطا در دریافت تنظیمات پیامک',
+                    content: 'خطا در دریافت تنظیمات پیامک (آدرس سرویس پیامک یا CORS را بررسی کنید)',
                     type: 'error',
                     duration: 3000,
                     refresh: Math.floor(Math.random() * 100)

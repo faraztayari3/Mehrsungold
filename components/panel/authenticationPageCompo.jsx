@@ -446,6 +446,14 @@ const AuthenticationIndexPageCompo = (props) => {
                         value = ConvertText(event.value);
                     }
                     break;
+                case "name":
+                    // Only allow Persian/Arabic letters, spaces, and some special characters
+                    const nameRegex = /^[\u0600-\u06FFa-zA-Z\s\u200C]*$/;
+                    value = event.target.value;
+                    if (!nameRegex.test(value)) {
+                        return; // Don't update if contains numbers or invalid characters
+                    }
+                    break;
                 default:
                     value = event.target.value;
                     break;
@@ -736,7 +744,7 @@ const AuthenticationIndexPageCompo = (props) => {
                                                 sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' },
                                             }}
                                             value={userData?.firstName}
-                                            onChange={handleChangeEditData('firstName', 'text')} />
+                                            onChange={handleChangeEditData('firstName', 'name')} />
                                     </FormControl>
                                 </div>
                                 <div className="col-span-12 md:col-span-6">
@@ -755,7 +763,7 @@ const AuthenticationIndexPageCompo = (props) => {
                                                 sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' },
                                             }}
                                             value={userData?.lastName}
-                                            onChange={handleChangeEditData('lastName', 'text')} />
+                                            onChange={handleChangeEditData('lastName', 'name')} />
                                     </FormControl>
                                 </div>
                                 <div className="col-span-12 md:col-span-6">

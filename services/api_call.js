@@ -10,7 +10,7 @@ import { parseCookies, setCookie } from "nookies"
  * @param {string} query - The query parameters for the API call.
  * @param {string} token - The token to use for authorization.
  * @param {object} router - The router object for navigation.
- *
+ * 
  */
 const ApiCall = (url, method, locale, body, query, token, router, formData) => {
     const cookies = parseCookies();
@@ -35,6 +35,7 @@ const ApiCall = (url, method, locale, body, query, token, router, formData) => {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${authToken}`
+                                
                 }
             }).then(async (response) => {
                 const result = typeof response == 'object' ? await response.json() : response;
