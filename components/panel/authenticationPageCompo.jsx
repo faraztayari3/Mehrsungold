@@ -134,6 +134,7 @@ const AuthenticationIndexPageCompo = (props) => {
                     <Check className="QontoStepIcon-completedIcon" />
                 ) : (
                     <div className="QontoStepIcon-circle" />
+                    
                 )}
             </QontoStepIconRoot>
         )
@@ -316,14 +317,24 @@ const AuthenticationIndexPageCompo = (props) => {
                 });
             } else {
                 let list = '';
+                const nameRegex = /^[\u0600-\u06FFa-zA-Z\s\u200C]*$/;
+                
                 if (validator.isEmpty(userData.firstName || '')) {
                     list += `نام  نمی تواند خالی باشد<br />`
                     setErrorName(true);
+                } else if (!nameRegex.test(userData.firstName || '')) {
+                    list += `نام نمی تواند شامل عدد باشد<br />`
+                    setErrorName(true);
                 }
+                
                 if (validator.isEmpty(userData.lastName || '')) {
                     list += `نام خانوادگی نمی تواند خالی باشد<br />`
                     setErrorFamily(true);
+                } else if (!nameRegex.test(userData.lastName || '')) {
+                    list += `نام خانوادگی نمی تواند شامل عدد باشد<br />`
+                    setErrorFamily(true);
                 }
+                
                 if (!validator.isLength(userData.nationalCode || '', { min: 10 })) {
                     list += `کد ملی نمی تواند کمتر از 10 رقم باشد<br />`
                     setErrorNaCode(true);
@@ -481,14 +492,24 @@ const AuthenticationIndexPageCompo = (props) => {
                     setActiveStep(step);
                 } else {
                     let list = '';
+                    const nameRegex = /^[\u0600-\u06FFa-zA-Z\s\u200C]*$/;
+                    
                     if (validator.isEmpty(userData.firstName || '')) {
                         list += `نام  نمی تواند خالی باشد<br />`
                         setErrorName(true);
+                    } else if (!nameRegex.test(userData.firstName || '')) {
+                        list += `نام نمی تواند شامل عدد باشد<br />`
+                        setErrorName(true);
                     }
+                    
                     if (validator.isEmpty(userData.lastName || '')) {
                         list += `نام خانوادگی نمی تواند خالی باشد<br />`
                         setErrorFamily(true);
+                    } else if (!nameRegex.test(userData.lastName || '')) {
+                        list += `نام خانوادگی نمی تواند شامل عدد باشد<br />`
+                        setErrorFamily(true);
                     }
+                    
                     if (!validator.isLength(userData.nationalCode || '', { min: 10 })) {
                         list += `کد ملی نمی تواند کمتر از 10 رقم باشد<br />`
                         setErrorNaCode(true);

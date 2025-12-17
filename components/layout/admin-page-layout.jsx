@@ -293,9 +293,8 @@ const AdminPageLayout = ({ children }) => {
             <LinkRouter legacyBehavior href="/">
                 <Link href="/" className="text-white">
                     <div className="flex flex-col cursor-pointer mt-5 lg:mt-10">
-                        <div className="text-[2rem] flex items-center justify-evenly">
-                            <img crossOrigin="anonymous" src={`${process.env.NEXT_PUBLIC_BASEURL}${darkModeToggle ? siteInfo?.darkIconImage : siteInfo?.lightIconImage}`} alt="icon" className="svgr w-[5rem] h-[5rem] me-[0.3rem] text-black dark:text-white" />
-                            <img crossOrigin="anonymous" src={`${process.env.NEXT_PUBLIC_BASEURL}${darkModeToggle ? siteInfo?.darkLogoImage : siteInfo?.lightLogoImage}`} alt="logo" className="svgr h-[3rem] text-black dark:text-white" />
+                        <div className="text-[2rem] flex items-center justify-center">
+                            <img crossOrigin="anonymous" src={`${process.env.NEXT_PUBLIC_BASEURL}${darkModeToggle ? siteInfo?.darkIconImage : siteInfo?.lightIconImage}`} alt="icon" className="svgr w-[5rem] h-[5rem] text-black dark:text-white" />
                         </div>
                     </div>
                 </Link>
