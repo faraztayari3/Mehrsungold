@@ -188,8 +188,13 @@ const UsersPageCompo = (props) => {
         }
 
         // Add verification status filter
+        // Special case: "NotLoggedIn" is derived from isFirstLoginDone === false
         if (filterVerificationStatus) {
-            queryParams += `verificationStatus=${filterVerificationStatus}&`;
+            if (filterVerificationStatus === 'NotLoggedIn') {
+                queryParams += `isFirstLoginDone=false&`;
+            } else {
+                queryParams += `verificationStatus=${filterVerificationStatus}&`;
+            }
         }
 
         queryParams += `sortOrder=${sortOrder}&sortBy=${sortBy}&limit=${usersLimit}&skip=${(page * usersLimit) - usersLimit}`;
@@ -723,9 +728,11 @@ const UsersPageCompo = (props) => {
                                             2: 'tomanBalance',
                                             3: 'createdAt',
                                             4: 'role',
-                                            5: 'verificationStatus'
+                                            5: 'verificationStatus',
+                                            6: 'isActive'
                                         };
                                         const field = sortableMap[index];
+
                                         return (
                                             <TableCell className={`${data.classes} border-b-0 px-8 text-start last:text-end pb-4`} key={index}>
                                                 {field ? (
@@ -799,19 +806,21 @@ const UsersPageCompo = (props) => {
                                                 <Chip label="کاربر ویژه" variant="outlined" size="small" className="w-full badge badge-success px-4" />}
                                         </TableCell>
                                         <TableCell className="border-none px-8 py-4 text-sm dark:text-white">
-                                            {(siteInfo?.offlineFirstStepUserVerifyEnabled || siteInfo?.onlineFirstStepUserVerifyEnabled) ?
-                                                <>
-                                                    {data.verificationStatus == 'NotVerified' ? <Chip label="احراز نشده" variant="outlined" size="small" className="w-full badge badge-error" /> : ''}
-                                                    {data.verificationStatus == 'FirstLevelVerified' && siteInfo?.secondStepUserVerifyEnabled ?
-                                                        <Chip label="احراز پایه" variant="outlined" size="small" className="w-full badge badge-success" /> : ''}
-                                                    {data.verificationStatus == 'FirstLevelVerified' && !siteInfo?.secondStepUserVerifyEnabled ?
-                                                        <Chip label="احراز شده" variant="outlined" size="small" className="w-full badge badge-success" /> : ''}
-                                                    {data.verificationStatus == 'SecondLevelRejected' || data.verificationStatus == 'FirstLevelRejected' ?
-                                                        <Chip label="احراز رد شده" variant="outlined" size="small" className="w-full badge badge-error" /> : ''}
-                                                    {data.verificationStatus == 'PendingSecondLevel' || data.verificationStatus == 'PendingFirstLevel' ? <Chip label="در انتظار تائید" variant="outlined" size="small" className="w-full badge badge-primary" /> : ''}
-                                                    {data.verificationStatus == 'SecondLevelVerified' ? <Chip label="احراز کامل" variant="outlined" size="small" className="w-full badge badge-success" /> : ''}
-                                                </> :
-                                                <Chip label="احراز شده" variant="outlined" size="small" className="w-full badge badge-success" />}
+                                            {data?.isFirstLoginDone === false ?
+                                                <Chip label="وارد نشده" variant="outlined" size="small" className="w-full badge badge-info" /> :
+                                                (siteInfo?.offlineFirstStepUserVerifyEnabled || siteInfo?.onlineFirstStepUserVerifyEnabled) ?
+                                                    <>
+                                                        {data.verificationStatus == 'NotVerified' ? <Chip label="احراز نشده" variant="outlined" size="small" className="w-full badge badge-error" /> : ''}
+                                                        {data.verificationStatus == 'FirstLevelVerified' && siteInfo?.secondStepUserVerifyEnabled ?
+                                                            <Chip label="احراز پایه" variant="outlined" size="small" className="w-full badge badge-success" /> : ''}
+                                                        {data.verificationStatus == 'FirstLevelVerified' && !siteInfo?.secondStepUserVerifyEnabled ?
+                                                            <Chip label="احراز شده" variant="outlined" size="small" className="w-full badge badge-success" /> : ''}
+                                                        {data.verificationStatus == 'SecondLevelRejected' || data.verificationStatus == 'FirstLevelRejected' ?
+                                                            <Chip label="احراز رد شده" variant="outlined" size="small" className="w-full badge badge-error" /> : ''}
+                                                        {data.verificationStatus == 'PendingSecondLevel' || data.verificationStatus == 'PendingFirstLevel' ? <Chip label="در انتظار تائید" variant="outlined" size="small" className="w-full badge badge-primary" /> : ''}
+                                                        {data.verificationStatus == 'SecondLevelVerified' ? <Chip label="احراز کامل" variant="outlined" size="small" className="w-full badge badge-success" /> : ''}
+                                                    </> :
+                                                    <Chip label="احراز شده" variant="outlined" size="small" className="w-full badge badge-success" />}
                                         </TableCell>
                                         <TableCell className="border-none px-8 py-4 text-sm dark:text-white">
                                             {data.isActive ? <Chip label="فعال" variant="outlined" size="small" className="w-full badge badge-success" /> :
@@ -890,13 +899,17 @@ const UsersPageCompo = (props) => {
                                                 <Chip label="کاربر ویژه" variant="outlined" size="small" className="w-full badge badge-success px-4" />}
                                         </TableCell>
                                         <TableCell className="border-none px-8 py-4 text-sm dark:text-white">
-                                            {data.verificationStatus == 'NotVerified' ? <Chip label="احراز نشده" variant="outlined" size="small" className="w-full badge badge-error" /> : ''}
-                                            {data.verificationStatus == 'FirstLevelVerified' ?
-                                                <Chip label="احراز پایه" variant="outlined" size="small" className="w-full badge badge-success" /> : ''}
-                                            {data.verificationStatus == 'SecondLevelRejected' || data.verificationStatus == 'FirstLevelRejected' ?
-                                                <Chip label="احراز رد شده" variant="outlined" size="small" className="w-full badge badge-error" /> : ''}
-                                            {data.verificationStatus == 'PendingSecondLevel' || data.verificationStatus == 'PendingFirstLevel' ? <Chip label="در انتظار تائید" variant="outlined" size="small" className="w-full badge badge-primary" /> : ''}
-                                            {data.verificationStatus == 'SecondLevelVerified' ? <Chip label="احراز کامل" variant="outlined" size="small" className="w-full badge badge-success" /> : ''}
+                                            {data?.isFirstLoginDone === false ?
+                                                <Chip label="وارد نشده" variant="outlined" size="small" className="w-full badge badge-info" /> :
+                                                <>
+                                                    {data.verificationStatus == 'NotVerified' ? <Chip label="احراز نشده" variant="outlined" size="small" className="w-full badge badge-error" /> : ''}
+                                                    {data.verificationStatus == 'FirstLevelVerified' ?
+                                                        <Chip label="احراز پایه" variant="outlined" size="small" className="w-full badge badge-success" /> : ''}
+                                                    {data.verificationStatus == 'SecondLevelRejected' || data.verificationStatus == 'FirstLevelRejected' ?
+                                                        <Chip label="احراز رد شده" variant="outlined" size="small" className="w-full badge badge-error" /> : ''}
+                                                    {data.verificationStatus == 'PendingSecondLevel' || data.verificationStatus == 'PendingFirstLevel' ? <Chip label="در انتظار تائید" variant="outlined" size="small" className="w-full badge badge-primary" /> : ''}
+                                                    {data.verificationStatus == 'SecondLevelVerified' ? <Chip label="احراز کامل" variant="outlined" size="small" className="w-full badge badge-success" /> : ''}
+                                                </>}
                                         </TableCell>
                                         <TableCell className="border-none px-8 py-4 text-sm dark:text-white">
                                             <LinkRouter legacyBehavior href={`/admin/panel/usersinglepage?id=${data._id}`}>
@@ -1598,6 +1611,7 @@ const UsersPageCompo = (props) => {
                                 }}
                             >
                                 <MenuItem value="">همه</MenuItem>
+                                <MenuItem value="NotLoggedIn">وارد نشده</MenuItem>
                                 <MenuItem value="NotVerified">احراز نشده</MenuItem>
                                 <MenuItem value="FirstLevelVerified">احراز اولیه</MenuItem>
                                 <MenuItem value="SecondLevelVerified">احراز کامل</MenuItem>
@@ -1737,6 +1751,7 @@ const UsersPageCompo = (props) => {
                                 }}
                             >
                                 <MenuItem value="">همه</MenuItem>
+                                <MenuItem value="NotLoggedIn">وارد نشده</MenuItem>
                                 <MenuItem value="NotVerified">احراز نشده</MenuItem>
                                 <MenuItem value="FirstLevelVerified">احراز اولیه</MenuItem>
                                 <MenuItem value="SecondLevelVerified">احراز کامل</MenuItem>
