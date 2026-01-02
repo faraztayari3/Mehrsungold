@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert'
 import IconButton from '@mui/material/IconButton'
 import CreditScoreIcon from '@mui/icons-material/CreditScore'
+import IosShareIcon from '@mui/icons-material/IosShare'
 import Slider from '@mui/material/Slider'
 import CancelIcon from '@mui/icons-material/CancelOutlined';
 import Table from '@mui/material/Table';
@@ -43,18 +44,40 @@ const PanelIndexPageCompo = (props) => {
     const router = useRouter();
     const { locale } = useRouter();
 
+    const DASHBOARD_MESSAGE_SUBJECT = 'پیام داشبورد';
+    const [dashboardMessage, setDashboardMessage] = useState(null);
+
     // تابع Share برای اشتراک‌گذاری کد دعوت
     const ShareReferralCode = (code) => () => {
+        const link = `${location.origin}/auth?ref=${code}`;
         if (navigator.share) {
             navigator.share({
                 title: 'کد دعوت مهرسان گلد',
-                text: `با استفاده از کد دعوت من در مهرسان گلد ثبت‌نام کنید و از مزایا بهره‌مند شوید.\nکد دعوت: ${code}`,
-                url: `${location.origin}/auth?ref=${code}`
+                text: `با استفاده از لینک دعوت من در مهرسان گلد ثبت‌نام کنید و از مزایا بهره‌مند شوید.\n${link}`,
+                url: link
             }).catch((error) => console.log('Error sharing', error));
         } else {
             // اگر Share API پشتیبانی نمی‌شه، کپی کن
-            CopyData(`${location.origin}/auth?ref=${code}`)();
+            CopyData(link)();
         }
+    };
+
+    const getRawBuyPrice = (data) => {
+        const base = Number(data?.tradeable?.price);
+        if (Number.isFinite(base)) return base;
+        const buyPrice = Number(data?.buyPrice);
+        const buyWage = Number(data?.buyWage);
+        if (Number.isFinite(buyPrice) && Number.isFinite(buyWage)) return buyPrice - buyWage;
+        return Number.isFinite(buyPrice) ? buyPrice : 0;
+    };
+
+    const getRawSellPrice = (data) => {
+        const base = Number(data?.tradeable?.price);
+        if (Number.isFinite(base)) return base;
+        const sellPrice = Number(data?.sellPrice);
+        const sellWage = Number(data?.sellWage);
+        if (Number.isFinite(sellPrice) && Number.isFinite(sellWage)) return sellPrice + sellWage;
+        return Number.isFinite(sellPrice) ? sellPrice : 0;
     };
 
     const TRADEABLES_TABLE_HEAD = [
@@ -109,6 +132,16 @@ const PanelIndexPageCompo = (props) => {
     useEffect(() => {
         getLevels(1);
     }, []);
+
+    useEffect(() => {
+        if (!userInfo?._id) return;
+        ApiCall('/message/my-messages', 'GET', locale, {}, `sortOrder=0&sortBy=createdAt&limit=50&skip=0&seen=false`, 'user', router).then(async (result) => {
+            const msg = result?.data?.find((m) => m?.subject === DASHBOARD_MESSAGE_SUBJECT);
+            setDashboardMessage(msg || null);
+        }).catch((error) => {
+            console.log(error);
+        });
+    }, [userInfo?._id, locale, router]);
 
     /**
          * Retrieves Levels list.
@@ -287,6 +320,25 @@ const PanelIndexPageCompo = (props) => {
                                     </div>
                                 </Alert>
                             </div> : ''}
+
+                            {(userInfo?.verificationStatus == 'SecondLevelVerified' || (userInfo?.verificationStatus == 'FirstLevelVerified' && !siteInfo?.secondStepUserVerifyEnabled)) && dashboardMessage?.text ?
+                                <div className="col-span-12">
+                                    <Alert
+                                        severity="info"
+                                        variant="filled"
+                                        color="warning"
+                                        className="custom-alert auth warning"
+                                    >
+                                        <div className="flex flex-col items-baseline md:items-center gap-y-2 md:flex-row md:justify-between w-full">
+                                            <span className="whitespace-pre-line">{dashboardMessage?.text}</span>
+                                            <Button variant="contained" color="error" size="medium" className="custom-btn text-white rounded-lg w-fit invisible"
+                                                startIcon={<CancelIcon />}>
+                                                <span className="mx-2">اطلاعیه</span>
+                                            </Button>
+                                        </div>
+                                    </Alert>
+                                </div>
+                                : ''}
                         </> : ''}
                     {priceInfo?.length > 0 ?
                         <>
@@ -325,8 +377,8 @@ const PanelIndexPageCompo = (props) => {
                                         </div>
                                         <span>موجودی:  <span className="font-semibold">{(userInfo?.tomanBalance || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> تومان</span>
                                         <div className="flex items-center gap-x-5">
-                                            <LinkRouter legacyBehavior href="/panel/deposit?type=online">
-                                                <Button href="/panel/deposit?type=online" variant="text" size="medium" color="primary" className="rounded-lg" disableElevation>
+                                            <LinkRouter legacyBehavior href="/panel/deposit?type=offline">
+                                                <Button href="/panel/deposit?type=offline" variant="text" size="medium" color="primary" className="rounded-lg" disableElevation>
                                                     <text className=" font-semibold">افزایش موجودی</text>
                                                 </Button >
                                             </LinkRouter>
@@ -366,15 +418,19 @@ const PanelIndexPageCompo = (props) => {
                                         <div className="flex flex-col justify-between gap-y-2">
                                             <div className="flex flex-col gap-y-1">
                                                 <div className="font-medium leading-7">قیمت خرید از {siteInfo?.title}:</div>
-                                                <span className="text-secondary-green dark:text-buy font-semibold">{(data?.buyPrice || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان</span>
+                                                <div className="text-secondary-green dark:text-buy font-semibold flex flex-col items-center">
+                                                    <span className="flex items-center justify-center">
+                                                        {(getRawBuyPrice(data) || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان
+                                                    </span>
+                                                </div>
                                             </div>
                                             <div className="flex flex-col gap-y-1">
                                                 <div className="font-medium leading-7">قیمت فروش به {siteInfo?.title}:</div>
-                                                <span className="text-sell font-semibold">{(data?.sellPrice || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان</span>
+                                                <span className="text-sell font-semibold">{(getRawSellPrice(data) || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان</span>
                                             </div>
                                             <div className="flex flex-col gap-y-1">
                                                 <div className="font-medium leading-7">ارزش تومانی:</div>
-                                                <span className="font-semibold">{((data?.sellPrice || 0) * (data?.balance || 0)).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان</span>
+                                                <span className="font-semibold">{((getRawSellPrice(data) || 0) * (data?.balance || 0)).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان</span>
                                             </div>
                                         </div>
                                     </div>
@@ -441,8 +497,8 @@ const PanelIndexPageCompo = (props) => {
                                                     ------
                                                 </TableCell>
                                                 <TableCell className="text-end rtl:rounded-l-2xl ltr:rounded-r-2xl border-none py-4 text-sm dark:text-white">
-                                                    <LinkRouter legacyBehavior href="/panel/deposit?type=online">
-                                                        <Button href="/panel/deposit?type=online" variant="text" size="medium" color="primary" className="rounded-lg" disableElevation>
+                                                    <LinkRouter legacyBehavior href="/panel/deposit?type=offline">
+                                                        <Button href="/panel/deposit?type=offline" variant="text" size="medium" color="primary" className="rounded-lg" disableElevation>
                                                             <text className=" font-semibold">افزایش موجودی</text>
                                                         </Button >
                                                     </LinkRouter>
@@ -461,10 +517,14 @@ const PanelIndexPageCompo = (props) => {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-center border-none py-4 text-sm font-semibold text-secondary-green dark:text-buy" scope="row">
-                                                        {(data?.buyPrice || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان
+                                                        <div className="flex flex-col items-center">
+                                                            <span className="flex items-center justify-center">
+                                                                {(getRawBuyPrice(data) || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان
+                                                            </span>
+                                                        </div>
                                                     </TableCell>
                                                     <TableCell className="text-center border-none py-4 text-sm font-semibold text-sell">
-                                                        {(data?.sellPrice || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان
+                                                        {(getRawSellPrice(data) || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان
                                                     </TableCell>
                                                     <TableCell className="text-center border-none py-4 text-sm dark:text-white flex flex-col items-center gap-y-2">
                                                         {userInfo?.role == 'VIPUser' ?
@@ -476,7 +536,7 @@ const PanelIndexPageCompo = (props) => {
 
                                                     </TableCell>
                                                     <TableCell className="text-center border-none py-4 text-sm dark:text-white font-semibold">
-                                                        {((data?.sellPrice || 0) * (data?.balance || 0)).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان
+                                                        {((getRawSellPrice(data) || 0) * (data?.balance || 0)).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان
                                                     </TableCell>
                                                     <TableCell className="text-end rtl:rounded-l-2xl ltr:rounded-r-2xl border-none py-4 text-sm dark:text-white">
                                                         <LinkRouter legacyBehavior href={`/panel/trade?type=buy&tradeable=${data.tradeable?.name}`}>
@@ -528,7 +588,7 @@ const PanelIndexPageCompo = (props) => {
                                 <Button
                                     variant="text"
                                     color="black"
-                                    onClick={CopyData(userInfo?.referralCode || '')}>
+                                    onClick={CopyData(`${location.origin}/auth?ref=${userInfo?.referralCode || ''}`)}>
                                     <span className="text-white text-2xl font-medium leading-10">{userInfo?.referralCode || ''}</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                                         <path d="M20.3116 12.6473L20.8293 10.7154C21.4335 8.46034 21.7356 7.3328 21.5081 6.35703C21.3285 5.58657 20.9244 4.88668 20.347 4.34587C19.6157 3.66095 18.4881 3.35883 16.2331 2.75458C13.978 2.15033 12.8504 1.84821 11.8747 2.07573C11.1042 2.25537 10.4043 2.65945 9.86351 3.23687C9.27709 3.86298 8.97128 4.77957 8.51621 6.44561C8.43979 6.7254 8.35915 7.02633 8.27227 7.35057L8.27222 7.35077L7.75458 9.28263C7.15033 11.5377 6.84821 12.6652 7.07573 13.641C7.25537 14.4115 7.65945 15.1114 8.23687 15.6522C8.96815 16.3371 10.0957 16.6392 12.3508 17.2435L12.3508 17.2435C14.3834 17.7881 15.4999 18.0873 16.415 17.9744C16.5152 17.9621 16.6129 17.9448 16.7092 17.9223C17.4796 17.7427 18.1795 17.3386 18.7203 16.7612C19.4052 16.0299 19.7074 14.9024 20.3116 12.6473Z" stroke="white" stroke-width="1.5" />
@@ -544,10 +604,7 @@ const PanelIndexPageCompo = (props) => {
                                         <IconButton
                                             onClick={ShareReferralCode(userInfo?.referralCode || '')}
                                             title="اشتراک‌گذاری">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-black">
-                                                <path d="M12 4V16M12 4L8 8M12 4L16 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                                <path d="M4 16.5C4 17.8807 5.11929 19 6.5 19H17.5C18.8807 19 20 17.8807 20 16.5V16C20 15.4477 19.5523 15 19 15C18.4477 15 18 15.4477 18 16V16.5C18 16.7761 17.7761 17 17.5 17H6.5C6.22386 17 6 16.7761 6 16.5V16C6 15.4477 5.55228 15 5 15C4.44772 15 4 15.4477 4 16V16.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                            </svg>
+                                            <IosShareIcon className="text-black" />
                                         </IconButton>
                                         <IconButton
                                             onClick={CopyData(`${location.origin}/auth?ref=${userInfo?.referralCode || ''}`)}

@@ -1828,8 +1828,8 @@ const OrderPageCompo = (props) => {
                             تراکنش درخواست شده بیش از موجودی شما می باشد. لطفا مبلغ {(errorWithdrawError?.neededAmount || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان به حساب خود اضافه کنید.
                         </p>
                         <div className="flex items-center justify-center gap-x-2">
-                            <LinkRouter legacyBehavior href={`/panel/deposit?type=online&amount=${errorWithdrawError?.neededAmount}`}>
-                                <Button href={`/panel/deposit?type=online&amount=${errorWithdrawError?.neededAmount}`} variant="contained" size="medium" className="rounded-lg" disableElevation
+                            <LinkRouter legacyBehavior href={`/panel/deposit?type=offline&amount=${errorWithdrawError?.neededAmount}`}>
+                                <Button href={`/panel/deposit?type=offline&amount=${errorWithdrawError?.neededAmount}`} variant="contained" size="medium" className="rounded-lg" disableElevation
                                     onClick={() => setShowWithdrawError(false)}>
                                     <text className="text-black font-semibold">افزایش موجودی</text>
                                 </Button >
@@ -1867,7 +1867,7 @@ const OrderPageCompo = (props) => {
                         <p className="text-center">
                             تراکنش درخواست شده بیش از موجودی شما می باشد. لطفا مبلغ {(errorWithdrawError?.neededAmount || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان به حساب خود اضافه کنید.
                         </p>
-                        <LinkRouter legacyBehavior href={`/panel/deposit?type=online&amount=${errorWithdrawError?.neededAmount}`}>
+                        <LinkRouter legacyBehavior href={`/panel/deposit?type=offline&amount=${errorWithdrawError?.neededAmount}`}>
                             <Button type="button" variant="contained" size="medium" className="rounded-lg" disableElevation
                                 onClick={() => setOpenBottomWithdrawErrorDrawer(false)}>
                                 <text className="text-black font-semibold">افزایش موجودی</text>

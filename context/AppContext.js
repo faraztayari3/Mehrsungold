@@ -22,24 +22,38 @@ export const AppWrapper = ({ children }) => {
 
     useEffect(() => {
         const fetchSettings = async () => {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BASEURL}/settings/public-settings`,
-                {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                }
-            )
+            try {
+                const baseUrl = process.env.NEXT_PUBLIC_BASEURL || 'http://localhost:3003';
+                const response = await fetch(
+                    `${baseUrl}/settings/public-settings`,
+                    {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
 
-            const result = await response.json();
-            dispatch({
-                type: "setSiteInfo",
-                value: result
-            });
-            if (!cookies.userToken) {
+                if (!response.ok) {
+                    throw new Error(`Failed to load public settings: ${response.status}`);
+                }
+
+                const result = await response.json();
                 dispatch({
-                    type: "setLoginStatus",
-                    value: false
+                    type: "setSiteInfo",
+                    value: result
                 });
+            } catch (_) {
+                // Do not crash the whole app if the API is unreachable.
+                dispatch({
+                    type: "setSiteInfo",
+                    value: {}
+                });
+            } finally {
+                if (!cookies.userToken) {
+                    dispatch({
+                        type: "setLoginStatus",
+                        value: false
+                    });
+                }
             }
         }
 

@@ -51,7 +51,23 @@ const DepositPageCompo = (props) => {
     const langText = useTranslations('');
     const router = useRouter();
     const { locale } = useRouter();
-    const [tabValue, setTabValue] = useState(router.query.type == 'online' ? 0 : 1);
+    const ONLINE_GATEWAY_TEMPORARILY_DISABLED = true;
+    const ONLINE_GATEWAY_DISABLED_MESSAGE = 'درگاه پرداخت بصورت موقت غیرفعال است';
+
+    const showOnlineGatewayDisabledMessage = () => {
+        dispatch({
+            type: 'setSnackbarProps', value: {
+                open: true,
+                content: ONLINE_GATEWAY_DISABLED_MESSAGE,
+                type: 'error',
+                duration: 3000,
+                refresh: parseInt(Math.floor(Math.random() * 100) + 1)
+            }
+        });
+    };
+
+    const shownOnlineGatewayDisabledOnceRef = useRef(false);
+    const [tabValue, setTabValue] = useState(1);
 
     const validationOnlineSchema = Yup.object({
         amount: Yup.string().required('این فیلد الزامی است')
@@ -75,20 +91,33 @@ const DepositPageCompo = (props) => {
     const [openAlert, setOpenAlert] = useState(true);
 
     useEffect(() => {
-        setTabValue(router.query.type == 'online' ? 0 : router.query.type == 'offline' ? 1 : 2);
+        if (router.query.type == 'online' && ONLINE_GATEWAY_TEMPORARILY_DISABLED) {
+            if (!shownOnlineGatewayDisabledOnceRef.current) {
+                shownOnlineGatewayDisabledOnceRef.current = true;
+                showOnlineGatewayDisabledMessage();
+            }
+            setTabValue(1);
+            router.replace(`/panel/deposit?type=offline`, `/panel/deposit?type=offline`, { locale });
+            return;
+        }
+
+        setTabValue(router.query.type == 'offline' ? 1 : router.query.type == 'id-deposit' ? 2 : 1);
         if (router.query.type == 'id-deposit') {
             getIDDepositData();
         }
     }, [router.query.type]);
 
     const handleChange = (event, newTabValue) => {
+        if (newTabValue == 0 && ONLINE_GATEWAY_TEMPORARILY_DISABLED) {
+            showOnlineGatewayDisabledMessage();
+            return;
+        }
+
         setTabValue(newTabValue);
         setAmount('');
         clearForm();
         clearErrors();
-        if (newTabValue == 0) {
-            router.push(`/panel/deposit?type=online`, `/panel/deposit?type=online`, { locale });
-        } else if (newTabValue == 1) {
+        if (newTabValue == 1) {
             router.push(`/panel/deposit?type=offline`, `/panel/deposit?type=offline`, { locale });
         } else {
             router.push(`/panel/deposit?type=id-deposit`, `/panel/deposit?type=id-deposit`, { locale });
@@ -112,8 +141,10 @@ const DepositPageCompo = (props) => {
         setLoadingBankAccounts(true);
         ApiCall('/user/card', 'GET', locale, {}, `status=Active&limit=${bankAccountsLimit}&skip=${(1 * bankAccountsLimit) - bankAccountsLimit}`, 'user', router).then(async (result) => {
             if (router.query.amount) {
-                setAmount(parseInt(router.query.amount));
-                userDepositOnline(parseInt(router.query.amount));
+                const parsedAmount = parseInt(router.query.amount);
+                setAmount(parsedAmount);
+                setValue('amount', parsedAmount);
+                clearErrors();
             }
             setBankAccountsTotal(result.count);
             setUserCard(result.data[0]?._id || '');

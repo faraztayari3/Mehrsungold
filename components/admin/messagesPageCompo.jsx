@@ -44,6 +44,7 @@ import ApiCall from "../../services/api_call"
 
 // Components
 import CustomSwitch from "../shared/CustomSwitch"
+import ConfirmDialog from "../shared/ConfirmDialog"
 
 /**
  * MessagesPageCompo component that displays the Messages Page Component of the website.
@@ -166,6 +167,65 @@ const MessagesPageCompo = (props) => {
             setShowMoreData(false);
             setOpenBottomMoreDataDrawer(true);
         }
+    }
+
+    const [showDashboardMessage, setShowDashboardMessage] = useState(false);
+    const [dashboardMessageText, setDashboardMessageText] = useState('');
+    const [showDashboardMessageConfirm, setShowDashboardMessageConfirm] = useState(false);
+    const [dashboardMessageLoading, setDashboardMessageLoading] = useState(false);
+
+    const handleShowDashboardMessage = () => {
+        setDashboardMessageText('');
+        setShowDashboardMessage(true);
+        setShowDashboardMessageConfirm(false);
+    }
+
+    const handleRequestSendDashboardMessage = () => {
+        if (!dashboardMessageText || dashboardMessageText.trim() === '') {
+            dispatch({
+                type: 'setSnackbarProps', value: {
+                    open: true, content: 'متن پیام داشبورد را وارد نمائید',
+                    type: 'error', duration: 3000, refresh: parseInt(Math.floor(Math.random() * 100) + 1)
+                }
+            });
+            return;
+        }
+        setShowDashboardMessageConfirm(true);
+    }
+
+    const sendDashboardMessage = async () => {
+        const body = {
+            subject: 'پیام داشبورد',
+            text: dashboardMessageText?.trim(),
+        };
+
+        setDashboardMessageLoading(true);
+        ApiCall('/message', 'POST', locale, body, '', 'admin', router).then(async () => {
+            setDashboardMessageLoading(false);
+            setShowDashboardMessageConfirm(false);
+            setShowDashboardMessage(false);
+            setDashboardMessageText('');
+            getMessages(1);
+            dispatch({
+                type: 'setSnackbarProps', value: {
+                    open: true, content: langText('Global.SuccessRequest'),
+                    type: 'success', duration: 1000, refresh: parseInt(Math.floor(Math.random() * 100) + 1)
+                }
+            });
+        }).catch((error) => {
+            setDashboardMessageLoading(false);
+            console.log(error);
+            let list = '';
+            error.message && typeof error.message == 'object' ? error.message.map(item => {
+                list += `${item}<br />`
+            }) : list = error.message;
+            dispatch({
+                type: 'setSnackbarProps', value: {
+                    open: true, content: list,
+                    type: 'error', duration: 3000, refresh: parseInt(Math.floor(Math.random() * 100) + 1)
+                }
+            });
+        });
     }
 
     const [users, setUsers] = useState([]);
@@ -421,6 +481,9 @@ const MessagesPageCompo = (props) => {
                     <Button type="button" variant="contained" size="medium" className="rounded-lg" disableElevation onClick={handleShowAddMessage}>
                         <text className="text-black font-semibold">ارسال پیام</text>
                     </Button >
+                    <Button type="button" variant="contained" size="medium" className="rounded-lg" disableElevation onClick={handleShowDashboardMessage}>
+                        <text className="text-black font-semibold">ارسال پیام داشبورد</text>
+                    </Button >
                 </div>
             </section>
 
@@ -506,6 +569,61 @@ const MessagesPageCompo = (props) => {
 
             {/* AddMessage */}
             <>
+                <Dialog onClose={() => setShowDashboardMessage(false)} open={showDashboardMessage} maxWidth={'sm'} fullWidth PaperProps={{ className: 'modals' }}>
+                    <div className="flex flex-col gap-y-6">
+                        <Typography component={'h2'} className="flex items-center justify-between gap-x-2">ارسال پیام داشبورد
+                            <IconButton
+                                color={darkModeToggle ? 'white' : 'black'}
+                                className="bg-black bg-opacity-5 dark:bg-white dark:bg-opacity-5"
+                                onClick={() => setShowDashboardMessage(false)}>
+                                <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24"><path d="M18 6l-6 6m0 0l-6 6m6-6l6 6m-6-6L6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"></path></svg>
+                            </IconButton>
+                        </Typography>
+                        <Divider component="div" className="w-full dark:bg-primary dark:bg-opacity-50" />
+                    </div>
+                    <form className="grid grid-cols-12 gap-x-4 gap-y-8 py-8" noValidate autoComplete="off" onSubmit={(e) => { e.preventDefault(); handleRequestSendDashboardMessage(); }}>
+                        <div className="col-span-12">
+                            <FormControl className="w-full">
+                                <TextField
+                                    type="text"
+                                    label="متن پیام داشبورد"
+                                    variant="outlined"
+                                    multiline
+                                    minRows={4}
+                                    InputLabelProps={{
+                                        sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' }
+                                    }}
+                                    InputProps={{
+                                        classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white' : 'text-black', focused: 'border-none' },
+                                        sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' },
+                                    }}
+                                    value={dashboardMessageText}
+                                    onChange={(e) => setDashboardMessageText(e.target.value)}
+                                />
+                            </FormControl>
+                        </div>
+                        <div className="col-span-12 flex items-center justify-end gap-x-2">
+                            <Button variant="text" color="primary" size="medium" className="custom-btn text-black dark:text-white rounded-lg" onClick={() => setShowDashboardMessage(false)}>
+                                <text className="mx-2">انصراف</text>
+                            </Button>
+                            <LoadingButton type="submit" variant="contained" size="medium" className="rounded-lg" disableElevation>
+                                <text className="text-black font-semibold">ارسال</text>
+                            </LoadingButton>
+                        </div>
+                    </form>
+                </Dialog>
+
+                <ConfirmDialog
+                    open={showDashboardMessageConfirm}
+                    onClose={() => setShowDashboardMessageConfirm(false)}
+                    onConfirm={sendDashboardMessage}
+                    title={'آیا از ارسال پیام داشبورد برای تمام کاربران مطمئن هستید؟'}
+                    confirmText={'تایید و ارسال'}
+                    cancelText={'انصراف'}
+                    loading={dashboardMessageLoading}
+                    darkModeToggle={darkModeToggle}
+                />
+
                 <Dialog onClose={() => setShowAddMessage(false)} open={showAddMessage} maxWidth={'sm'} fullWidth PaperProps={{ className: 'modals' }}>
                     <div className="flex flex-col gap-y-6">
                         <Typography component={'h2'} className="flex items-center justify-between gap-x-2">ارسال پیام

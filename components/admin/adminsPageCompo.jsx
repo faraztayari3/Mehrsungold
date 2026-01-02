@@ -11,6 +11,8 @@ import Typography from '@mui/material/Typography'
 import SwipeableDrawer from '@mui/material/SwipeableDrawer'
 import CircularProgress from '@mui/material/CircularProgress'
 import Divider from '@mui/material/Divider';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -25,6 +27,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import CancelIcon from '@mui/icons-material/CancelOutlined'
 import CheckCircleIcon from '@mui/icons-material/CheckCircleOutline'
+import DeleteIcon from '@mui/icons-material/Delete';
 import moment from 'jalali-moment'
 
 import { PatternFormat } from 'react-number-format';
@@ -58,6 +61,10 @@ const AdminsPageCompo = (props) => {
     const langText = useTranslations('');
     const router = useRouter();
     const { locale } = useRouter();
+
+    const isSuperAdmin = adminInfo?.role === 'SuperAdmin';
+    const sidebarPermissions = Array.isArray(adminInfo?.sidebarPermissions) ? adminInfo.sidebarPermissions : [];
+    const canSeeAdmins = isSuperAdmin || sidebarPermissions.includes('admins');
 
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -106,10 +113,10 @@ const AdminsPageCompo = (props) => {
 
     const [pageItem, setPageItem] = useState(1);
     useEffect(() => {
-        if (adminInfo?.role == 'SuperAdmin') {
+        if (canSeeAdmins) {
             getAdmins(1);
         }
-    }, [adminInfo]);
+    }, [canSeeAdmins]);
 
     /**
         * Retrieves Users.
@@ -121,7 +128,9 @@ const AdminsPageCompo = (props) => {
     const [usersTotal, setUsersTotal] = useState(0);
     const getAdmins = (page, search) => {
         setLoadingUsers(true);
-        ApiCall('/user', 'GET', locale, {}, `${search ? `search=${search}&` : ''}roles=ExtConsumer&roles=Admin&roles=SuperAdmin&sortOrder=0&sortBy=createdAt&limit=${usersLimit}&skip=${(page * usersLimit) - usersLimit}`, 'admin', router).then(async (result) => {
+        ApiCall('/user', 'GET', locale, {}, `${search ? `search=${search}&` : ''}roles=Admin&roles=SuperAdmin&sortOrder=0&sortBy=createdAt&limit=${usersLimit}&skip=${(page * usersLimit) - usersLimit}`, 'admin', router).then(async (result) => {
+            console.log('📋 Admin List Response:', result);
+            console.log('📋 First Admin:', result.data[0]);
             setUsersTotal(result.count);
             setUsers(result.data);
             setLoadingUsers(false);
@@ -174,6 +183,186 @@ const AdminsPageCompo = (props) => {
             setShowAddAdmin(false);
             setOpenBottomAddAdminDrawer(true);
         }
+    }
+
+    const [showAddOperator, setShowAddOperator] = useState(false);
+    const [loadingOperator, setLoadingOperator] = useState(false);
+    const [showOperatorPassword, setShowOperatorPassword] = useState(false);
+    const [addOperator, setAddOperator] = useState({
+        mobileNumber: '',
+        password: '',
+        firstName: '',
+        lastName: '',
+        sidebarPermissions: []
+    });
+    const [operatorPermissions, setOperatorPermissions] = useState({
+        users: false,
+        products: false,
+        giftCards: false,
+        limitations: false,
+        accounting: false,
+        sms: false,
+        messages: false,
+        settings: false
+    });
+
+    const operatorValidationSchema = Yup.object({
+        operatorMobileNumber: Yup.string()
+            .required('این فیلد الزامی است')
+            .transform(value => value.replace(/\s+/g, ''))
+            .test('starts-with-09', 'شماره موبایل نامعتبر می باشد', value => value && value.startsWith('09'))
+            .matches(
+                /^(\+?98[\-\s]?|0)9[0-39]\d[\-\s]?\d{3}[\-\s]?\d{4}$/,
+                'شماره موبایل نامعتبر می باشد'
+            )
+            .matches(/^\d{11}$/, 'شماره موبایل باید 11 رقم باشد'),
+        operatorPassword: Yup.string()
+            .required('این فیلد الزامی است')
+            .min(8, 'رمز عبور باید حداقل 8 کاراکتر باشد')
+            .matches(/[a-z]/, 'رمز عبور باید حداقل یک حرف کوچک انگلیسی باشد')
+            .matches(/[A-Z]/, 'رمز عبور باید حداقل یک حرف بزرگ انگلیسی باشد')
+            .matches(/[0-9]/, 'رمز عبور باید حداقل یک عدد باشد'),
+        operatorFirstName: Yup.string().required('این فیلد الزامی است'),
+        operatorLastName: Yup.string().required('این فیلد الزامی است')
+    });
+
+    const { control: operatorControl, setValue: setOperatorValue, handleSubmit: handleOperatorSubmit, formState: { errors: operatorErrors } } = useForm({
+        resolver: yupResolver(operatorValidationSchema),
+    });
+
+    const handleShowAddOperator = () => {
+        setShowAddOperator(true);
+    }
+    const handleCloseAddOperator = () => {
+        setShowAddOperator(false);
+        setAddOperator({
+            mobileNumber: '',
+            password: '',
+            firstName: '',
+            lastName: '',
+            sidebarPermissions: []
+        });
+        setOperatorPermissions({
+            users: false,
+            products: false,
+            giftCards: false,
+            limitations: false,
+            accounting: false,
+            sms: false,
+            messages: false,
+            settings: false
+        });
+        setOperatorValue('operatorMobileNumber', '');
+        setOperatorValue('operatorPassword', '');
+        setOperatorValue('operatorFirstName', '');
+        setOperatorValue('operatorLastName', '');
+    }
+    const handleOperatorPermissionChange = (permission) => {
+        setOperatorPermissions(prev => ({
+            ...prev,
+            [permission]: !prev[permission]
+        }));
+    }
+
+    const handleChangeOperatorData = (event, input, type) => {
+        let value;
+        switch (type) {
+            case "mobileNumberFormat":
+                if (event.value == '') {
+                    value = '';
+                } else {
+                    const inputNumber = ConvertText(event.value);
+                    value = `${inputNumber.startsWith("0") ? inputNumber : `0${inputNumber}`}`;
+                }
+                break;
+            default:
+                value = event.target.value;
+                break;
+        }
+        setAddOperator((prevState) => ({
+            ...prevState,
+            [input]: value,
+        }));
+    }
+
+    const saveOperator = () => {
+        setLoadingOperator(true);
+        
+        // ساخت آرایه permissions بر اساس انتخاب‌های کاربر
+        const selectedPermissions = [];
+        if (operatorPermissions.users) selectedPermissions.push('users', 'admins');
+        if (operatorPermissions.products) selectedPermissions.push('products');
+        if (operatorPermissions.giftCards) selectedPermissions.push('giftCards');
+        if (operatorPermissions.limitations) selectedPermissions.push('limitations');
+        if (operatorPermissions.accounting) selectedPermissions.push('accounting');
+        if (operatorPermissions.sms) selectedPermissions.push('sms');
+        if (operatorPermissions.messages) selectedPermissions.push('messages');
+        if (operatorPermissions.settings) selectedPermissions.push('settings');
+
+        const operatorData = {
+            mobileNumber: addOperator.mobileNumber,
+            password: addOperator.password,
+            firstName: addOperator.firstName,
+            lastName: addOperator.lastName,
+            email: `${addOperator.mobileNumber}@operator.local`,
+            sex: 'Male'
+        };
+
+        ApiCall('/user/create-admin', 'POST', locale, operatorData, '', 'admin', router).then(async (result) => {
+            // create-admin در بک‌اند { message, id } برمی‌گرداند (نه _id)
+            const createdAdminId = result?._id || result?.id;
+
+            // بعد از ساخت admin، permissions را آپدیت می‌کنیم
+            if (selectedPermissions.length > 0 && createdAdminId) {
+                const updateData = { sidebarPermissions: selectedPermissions };
+
+                ApiCall(`/user/${createdAdminId}`, 'PATCH', locale, updateData, '', 'admin', router).then(() => {
+                    setLoadingOperator(false);
+                    handleCloseAddOperator();
+                    getAdmins(1);
+                    dispatch({
+                        type: 'setSnackbarProps', value: {
+                            open: true, content: 'اپراتور با موفقیت ایجاد شد',
+                            type: 'success', duration: 1000, refresh: parseInt(Math.floor(Math.random() * 100) + 1)
+                        }
+                    });
+                }).catch((updateError) => {
+                    // حتی اگر آپدیت permissions خطا داد، admin ساخته شده پس موفقیت نشان می‌دهیم
+                    setLoadingOperator(false);
+                    handleCloseAddOperator();
+                    getAdmins(1);
+                    dispatch({
+                        type: 'setSnackbarProps', value: {
+                            open: true, content: 'اپراتور ایجاد شد اما دسترسی‌ها ذخیره نشد. لطفاً دستی تنظیم کنید.',
+                            type: 'warning', duration: 3000, refresh: parseInt(Math.floor(Math.random() * 100) + 1)
+                        }
+                    });
+                });
+            } else {
+                setLoadingOperator(false);
+                handleCloseAddOperator();
+                getAdmins(1);
+                dispatch({
+                    type: 'setSnackbarProps', value: {
+                        open: true, content: 'اپراتور با موفقیت ایجاد شد',
+                        type: 'success', duration: 1000, refresh: parseInt(Math.floor(Math.random() * 100) + 1)
+                    }
+                });
+            }
+        }).catch((error) => {
+            setLoadingOperator(false);
+            console.log(error);
+            let list = '';
+            error.message && typeof error.message == 'object' ? error.message.map(item => {
+                list += `${item}<br />`
+            }) : list = error.message;
+            dispatch({
+                type: 'setSnackbarProps', value: {
+                    open: true, content: list,
+                    type: 'error', duration: 3000, refresh: parseInt(Math.floor(Math.random() * 100) + 1)
+                }
+            });
+        });
     }
 
     /**
@@ -313,6 +502,16 @@ const AdminsPageCompo = (props) => {
         setOpenDialog(false);
     }
 
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [deleteAdminId, setDeleteAdminId] = useState('');
+    const handleOpenDeleteDialog = (adminId) => (event) => {
+        setDeleteAdminId(adminId);
+        setOpenDeleteDialog(true);
+    }
+    const handleCloseDeleteDialog = () => {
+        setOpenDeleteDialog(false);
+    }
+
     /**
     * Delete a Admin.
     * @returns None
@@ -356,19 +555,64 @@ const AdminsPageCompo = (props) => {
         }
     }
 
+    const [deleteAdminLoading, setDeleteAdminLoading] = useState(false);
+    const deleteAdmin = () => {
+        if (location.origin.includes("https://gold.viraasr.com")) {
+            dispatch({
+                type: 'setSnackbarProps', value: {
+                    open: true, content: 'این قابلیت به دلیل دمو بودن اسکریپت غیرفعال می باشد',
+                    type: 'error', duration: 3000, refresh: parseInt(Math.floor(Math.random() * 100) + 1)
+                }
+            });
+        } else {
+            setDeleteAdminLoading(true);
+            ApiCall(`/user/${deleteAdminId}/superadmin-delete`, 'DELETE', locale, {}, '', 'admin', router)
+                .then(async (result) => {
+                    setDeleteAdminLoading(false);
+                    getAdmins(1);
+                    setDeleteAdminId('');
+                    dispatch({
+                        type: 'setSnackbarProps', value: {
+                            open: true, content: langText('Global.Success'),
+                            type: 'success', duration: 1000, refresh: parseInt(Math.floor(Math.random() * 100) + 1)
+                        }
+                    });
+                    handleCloseDeleteDialog();
+                })
+                .catch((error) => {
+                    setDeleteAdminLoading(false);
+                    console.log(error);
+                    handleCloseDeleteDialog();
+                    let list = '';
+                    error.message && typeof error.message == 'object' ? error.message.map(item => {
+                        list += `${item}<br />`
+                    }) : list = error.message;
+                    dispatch({
+                        type: 'setSnackbarProps', value: {
+                            open: true, content: list,
+                            type: 'error', duration: 3000, refresh: parseInt(Math.floor(Math.random() * 100) + 1)
+                        }
+                    });
+                });
+        }
+    }
+
     return (
         <div className=" flex flex-col gap-y-8">
             {userLoading ? <div className="flex justify-center items-center mt-16"><CircularProgress color={darkModeToggle ? 'white' : 'black'} /></div> :
                 <>
                     <section className="flex items-center justify-between">
                         <h1 className="text-large-2">ادمین ها</h1>
-                        {adminInfo?.role == 'SuperAdmin' ? <div className="flex items-center gap-x-4">
+                        {isSuperAdmin ? <div className="flex items-center gap-x-4">
                             <Button type="button" variant="contained" size="medium" className="rounded-lg" disableElevation onClick={handleShowAddAdmin}>
                                 <text className="text-black font-semibold">افزودن ادمین</text>
                             </Button >
+                            <Button type="button" variant="outlined" size="medium" className="rounded-lg" disableElevation onClick={handleShowAddOperator}>
+                                <text className={`${darkModeToggle ? 'text-white' : 'text-black'} font-semibold`}>افزودن اپراتور</text>
+                            </Button >
                         </div> : ''}
                     </section>
-                    {adminInfo?.role == 'SuperAdmin' ?
+                    {canSeeAdmins ?
                         <>
                             <section>
                                 <div className="flex items-center justify-between gap-x-4">
@@ -441,20 +685,36 @@ const AdminsPageCompo = (props) => {
                                                                 </LinkRouter>
                                                             </TableCell>
                                                             <TableCell className="text-end rtl:rounded-l-2xl ltr:rounded-r-2xl border-none px-8 py-4 text-sm dark:text-white">
-                                                                {data.role != 'SuperAdmin' ? data.isActive ?
-                                                                    <Tooltip title="غیرفعالسازی ادمین">
-                                                                        <IconButton
-                                                                            color={`error`}
-                                                                            onClick={handleOpenDialog(data._id, false)}>
-                                                                            <CancelIcon />
-                                                                        </IconButton>
-                                                                    </Tooltip> : <Tooltip title="فعالسازی ادمین">
-                                                                        <IconButton
-                                                                            color={`success`}
-                                                                            onClick={handleOpenDialog(data._id, true)}>
-                                                                            <CheckCircleIcon />
-                                                                        </IconButton>
-                                                                    </Tooltip> : '------'}
+                                                                {data.role != 'SuperAdmin' ?
+                                                                    <div className="flex items-center justify-end gap-x-2">
+                                                                        {data.isActive ?
+                                                                            <Tooltip title="غیرفعالسازی ادمین">
+                                                                                <IconButton
+                                                                                    color={`error`}
+                                                                                    onClick={handleOpenDialog(data._id, false)}>
+                                                                                    <CancelIcon />
+                                                                                </IconButton>
+                                                                            </Tooltip>
+                                                                            :
+                                                                            <Tooltip title="فعالسازی ادمین">
+                                                                                <IconButton
+                                                                                    color={`success`}
+                                                                                    onClick={handleOpenDialog(data._id, true)}>
+                                                                                    <CheckCircleIcon />
+                                                                                </IconButton>
+                                                                            </Tooltip>
+                                                                        }
+                                                                        {isSuperAdmin ?
+                                                                            <Tooltip title="حذف ادمین">
+                                                                                <IconButton
+                                                                                    color={`error`}
+                                                                                    onClick={handleOpenDeleteDialog(data._id)}>
+                                                                                    <DeleteIcon />
+                                                                                </IconButton>
+                                                                            </Tooltip>
+                                                                            : ''}
+                                                                    </div>
+                                                                    : '------'}
                                                             </TableCell>
                                                         </TableRow>
                                                     ))}
@@ -468,6 +728,15 @@ const AdminsPageCompo = (props) => {
                                             onConfirm={changeStatusAdmin}
                                             title="آیا مطمئن هستید؟"
                                             loading={deleteLoading}
+                                            darkModeToggle={darkModeToggle}
+                                        />
+
+                                        <ConfirmDialog
+                                            open={openDeleteDialog}
+                                            onClose={handleCloseDeleteDialog}
+                                            onConfirm={deleteAdmin}
+                                            title="آیا مطمئن هستید؟"
+                                            loading={deleteAdminLoading}
                                             darkModeToggle={darkModeToggle}
                                         />
                                     </>
@@ -857,6 +1126,301 @@ const AdminsPageCompo = (props) => {
                                     </form>
                                 </SwipeableDrawer>
                             </>
+
+                            {/* Add Operator Dialog */}
+                            <Dialog onClose={handleCloseAddOperator} open={showAddOperator} maxWidth={'md'} fullWidth PaperProps={{ className: 'modals' }}>
+                                <div className="flex flex-col gap-y-6">
+                                    <Typography component={'h2'} className="flex items-center justify-between gap-x-2">افزودن اپراتور
+                                        <IconButton
+                                            color={darkModeToggle ? 'white' : 'black'}
+                                            className="bg-black bg-opacity-5 dark:bg-white dark:bg-opacity-5"
+                                            onClick={handleCloseAddOperator}>
+                                            <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24"><path d="M18 6l-6 6m0 0l-6 6m6-6l6 6m-6-6L6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"></path></svg>
+                                        </IconButton>
+                                    </Typography>
+                                    <Divider component="div" className="w-full dark:bg-primary dark:bg-opacity-50" />
+                                </div>
+                                <form
+                                    key={2}
+                                    className="grid grid-cols-12 gap-x-4 gap-y-8 py-8"
+                                    noValidate
+                                    autoComplete="off"
+                                    onSubmit={handleOperatorSubmit(saveOperator)}
+                                >
+                                    <Controller
+                                        name="operatorFirstName"
+                                        control={operatorControl}
+                                        render={({ field }) => (
+                                            <FormControl className="w-full col-span-12 md:col-span-6">
+                                                <TextField
+                                                    {...field}
+                                                    type="text"
+                                                    label="نام اپراتور"
+                                                    variant="outlined"
+                                                    error={!!operatorErrors.operatorFirstName}
+                                                    helperText={operatorErrors.operatorFirstName ? operatorErrors.operatorFirstName.message : ''}
+                                                    InputLabelProps={{
+                                                        sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' }
+                                                    }}
+                                                    InputProps={{
+                                                        classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' },
+                                                        sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' },
+                                                    }}
+                                                    onChange={(event) => {
+                                                        field.onChange(event);
+                                                        handleChangeOperatorData(event, 'firstName', 'text');
+                                                    }} />
+                                            </FormControl>
+                                        )}
+                                    />
+                                    <Controller
+                                        name="operatorLastName"
+                                        control={operatorControl}
+                                        render={({ field }) => (
+                                            <FormControl className="w-full col-span-12 md:col-span-6">
+                                                <TextField
+                                                    {...field}
+                                                    type="text"
+                                                    label="نام خانوادگی اپراتور"
+                                                    variant="outlined"
+                                                    error={!!operatorErrors.operatorLastName}
+                                                    helperText={operatorErrors.operatorLastName ? operatorErrors.operatorLastName.message : ''}
+                                                    InputLabelProps={{
+                                                        sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' }
+                                                    }}
+                                                    InputProps={{
+                                                        classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white rtl' : 'text-black rtl', focused: 'border-none' },
+                                                        sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' },
+                                                    }}
+                                                    onChange={(event) => {
+                                                        field.onChange(event);
+                                                        handleChangeOperatorData(event, 'lastName', 'text');
+                                                    }} />
+                                            </FormControl>
+                                        )}
+                                    />
+                                    <Controller
+                                        name="operatorMobileNumber"
+                                        control={operatorControl}
+                                        render={({ field }) => (
+                                            <FormControl className="w-full col-span-12 md:col-span-6">
+                                                <PatternFormat
+                                                    {...field}
+                                                    customInput={TextField}
+                                                    format="#### ### ####"
+                                                    label="شماره موبایل اپراتور"
+                                                    variant="outlined"
+                                                    error={!!operatorErrors.operatorMobileNumber}
+                                                    helperText={operatorErrors.operatorMobileNumber ? operatorErrors.operatorMobileNumber.message : ''}
+                                                    InputLabelProps={{
+                                                        sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' }
+                                                    }}
+                                                    InputProps={{
+                                                        classes: {
+                                                            root: 'dark:bg-dark',
+                                                            input: darkModeToggle ? 'text-white rtl text-end' : 'text-black rtl text-end',
+                                                            focused: 'border-none'
+                                                        },
+                                                        sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' },
+                                                        inputMode: 'numeric'
+                                                    }}
+                                                    value={addOperator?.mobileNumber}
+                                                    onValueChange={(event) => {
+                                                        field.onChange(event.value);
+                                                        handleChangeOperatorData(event, 'mobileNumber', 'mobileNumberFormat');
+                                                    }}
+                                                    onPaste={(event) => {
+                                                        event.preventDefault();
+                                                        const pastedText = event.clipboardData.getData('Text');
+                                                        const converted = ConvertText(pastedText);
+                                                        const mobileNumber = converted.startsWith('0') ? converted : `0${converted}`;
+                                                        setAddOperator((prevState) => ({
+                                                            ...prevState,
+                                                            mobileNumber: mobileNumber,
+                                                        }));
+                                                    }} />
+                                            </FormControl>
+                                        )}
+                                    />
+                                    <Controller
+                                        name="operatorPassword"
+                                        control={operatorControl}
+                                        render={({ field }) => (
+                                            <FormControl className="w-full col-span-12 md:col-span-6">
+                                                <TextField
+                                                    {...field}
+                                                    type={showOperatorPassword ? "text" : "password"}
+                                                    label="رمز عبور اپراتور"
+                                                    variant="outlined"
+                                                    error={!!operatorErrors.operatorPassword}
+                                                    helperText={operatorErrors.operatorPassword ? operatorErrors.operatorPassword.message : ''}
+                                                    InputLabelProps={{
+                                                        sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' }
+                                                    }}
+                                                    InputProps={{
+                                                        classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-white' : 'text-black', focused: 'border-none' },
+                                                        sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' },
+                                                        endAdornment: (
+                                                            <IconButton
+                                                                color={`${darkModeToggle ? 'white' : 'black'}`}
+                                                                onClick={() => setShowOperatorPassword(!showOperatorPassword)}
+                                                            >
+                                                                {showOperatorPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                                            </IconButton>
+                                                        )
+                                                    }}
+                                                    onChange={(event) => {
+                                                        field.onChange(event);
+                                                        handleChangeOperatorData(event, 'password', 'text');
+                                                    }} />
+                                            </FormControl>
+                                        )}
+                                    />
+                                    
+                                    <div className="col-span-12">
+                                        <Divider component="div" className="w-full dark:bg-primary dark:bg-opacity-50" />
+                                    </div>
+
+                                    <div className="col-span-12">
+                                        <Typography component={'h3'} className="text-base font-semibold mb-4">انتخاب دسترسی‌های سایدبار:</Typography>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={operatorPermissions.users}
+                                                        onChange={() => handleOperatorPermissionChange('users')}
+                                                        sx={{
+                                                            color: darkModeToggle ? '#fff' : '#000',
+                                                            '&.Mui-checked': {
+                                                                color: '#15803d',
+                                                            },
+                                                        }}
+                                                    />
+                                                }
+                                                label="کاربران"
+                                                className="dark:text-white"
+                                            />
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={operatorPermissions.products}
+                                                        onChange={() => handleOperatorPermissionChange('products')}
+                                                        sx={{
+                                                            color: darkModeToggle ? '#fff' : '#000',
+                                                            '&.Mui-checked': {
+                                                                color: '#15803d',
+                                                            },
+                                                        }}
+                                                    />
+                                                }
+                                                label="محصولات"
+                                                className="dark:text-white"
+                                            />
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={operatorPermissions.giftCards}
+                                                        onChange={() => handleOperatorPermissionChange('giftCards')}
+                                                        sx={{
+                                                            color: darkModeToggle ? '#fff' : '#000',
+                                                            '&.Mui-checked': {
+                                                                color: '#15803d',
+                                                            },
+                                                        }}
+                                                    />
+                                                }
+                                                label="گیفت کارت ها"
+                                                className="dark:text-white"
+                                            />
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={operatorPermissions.limitations}
+                                                        onChange={() => handleOperatorPermissionChange('limitations')}
+                                                        sx={{
+                                                            color: darkModeToggle ? '#fff' : '#000',
+                                                            '&.Mui-checked': {
+                                                                color: '#15803d',
+                                                            },
+                                                        }}
+                                                    />
+                                                }
+                                                label="اعمال محدودیت"
+                                                className="dark:text-white"
+                                            />
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={operatorPermissions.accounting}
+                                                        onChange={() => handleOperatorPermissionChange('accounting')}
+                                                        sx={{
+                                                            color: darkModeToggle ? '#fff' : '#000',
+                                                            '&.Mui-checked': {
+                                                                color: '#15803d',
+                                                            },
+                                                        }}
+                                                    />
+                                                }
+                                                label="حسابداری"
+                                                className="dark:text-white"
+                                            />
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={operatorPermissions.sms}
+                                                        onChange={() => handleOperatorPermissionChange('sms')}
+                                                        sx={{
+                                                            color: darkModeToggle ? '#fff' : '#000',
+                                                            '&.Mui-checked': {
+                                                                color: '#15803d',
+                                                            },
+                                                        }}
+                                                    />
+                                                }
+                                                label="پیامک"
+                                                className="dark:text-white"
+                                            />
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={operatorPermissions.messages}
+                                                        onChange={() => handleOperatorPermissionChange('messages')}
+                                                        sx={{
+                                                            color: darkModeToggle ? '#fff' : '#000',
+                                                            '&.Mui-checked': {
+                                                                color: '#15803d',
+                                                            },
+                                                        }}
+                                                    />
+                                                }
+                                                label="پیام ها"
+                                                className="dark:text-white"
+                                            />
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={operatorPermissions.settings}
+                                                        onChange={() => handleOperatorPermissionChange('settings')}
+                                                        sx={{
+                                                            color: darkModeToggle ? '#fff' : '#000',
+                                                            '&.Mui-checked': {
+                                                                color: '#15803d',
+                                                            },
+                                                        }}
+                                                    />
+                                                }
+                                                label="تنظیمات"
+                                                className="dark:text-white"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="col-span-12 text-end">
+                                        <LoadingButton type="submit" variant="contained" size="medium" className="rounded-lg" disableElevation loading={loadingOperator}>
+                                            <text className="text-black font-semibold">افزودن اپراتور</text>
+                                        </LoadingButton>
+                                    </div>
+                                </form>
+                            </Dialog>
                         </> : <div className="py-16">
                             <span className="block text-center text-large-1 text-primary-gray">سطح دسترسی شما باید SuperAdmin باشد.</span>
                         </div>}

@@ -15,7 +15,9 @@ import PanelPageLayout from "../components/layout/panel-page-layout"
 import AdminPageLayout from "../components/layout/admin-page-layout"
 import AuthPageLayout from "../components/layout/auth-page-layout"
 
-let layouts = {}
+let layouts = {} 
+
+
 
 import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
@@ -69,6 +71,8 @@ import panelFaMessages from '../context/languages/panel-fa.json';
 import authFaMessages from '../context/languages/authentication-fa.json';
 
 import adminFaMessages from '../context/languages/admin-fa.json';
+import { reach } from 'yup'
+import { ReadMoreTwoTone } from '@mui/icons-material'
 
 const messagesMap = {
   PanelPageLayout: {
@@ -107,36 +111,57 @@ export default function App({ Component, pageProps }) {
   const [refresh, setRefresh] = useState(true);
   useEffect(() => {
     const siteInfo = JSON.parse(localStorage.getItem('siteInfo'));
-    if (siteInfo && refresh) {
+    if (refresh) {
       console.log('start');
       setRefresh(false);
       const manifestElement = document.getElementById("manifest");
       const baseUrl = process.env.NEXT_PUBLIC_BASEURL || '';
-      const iconPath = siteInfo?.lightIconImage;
-      const iconSrc = baseUrl && iconPath ? `${baseUrl}${iconPath}` : null;
-      const icons = iconSrc
-        ? [
-          {
-            src: iconSrc,
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: iconSrc,
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-        : [];
+      // Prefer DARK icon for installed app icon
+      const iconPath =
+        siteInfo?.darkIconImage ||
+        siteInfo?.darkLogoImage ||
+        siteInfo?.lightIconImage ||
+        siteInfo?.lightLogoImage;
+      
+      // Use custom icon from settings or fallback to default PNG icons
+      const iconSrc192 = baseUrl && iconPath ? `${baseUrl}${iconPath}` : '/icon-192.png';
+      const iconSrc512 = baseUrl && iconPath ? `${baseUrl}${iconPath}` : '/icon-512.png';
+
+      // iOS Add to Home Screen uses apple-touch-icon (not manifest)
+      // Keep fallback to local PNG if admin icon isn't available.
+      const appleTouchIconSrc = baseUrl && iconPath ? `${baseUrl}${iconPath}` : '/apple-touch-icon.png';
+      const appleTouchIds = ['apple-touch-icon-180', 'apple-touch-icon-152', 'apple-touch-icon-120'];
+      for (const id of appleTouchIds) {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute('href', appleTouchIconSrc);
+      }
+
+      const iconType = (iconPath || '').toLowerCase().endsWith('.svg') ? 'image/svg+xml' : 'image/png';
+      
+      const icons = [
+        {
+          src: iconSrc192,
+          sizes: '192x192',
+          type: iconType,
+          purpose: 'any maskable'
+        },
+        {
+          src: iconSrc512,
+          sizes: '512x512',
+          type: iconType,
+          purpose: 'any maskable'
+        }
+      ];
 
       const manifestString = JSON.stringify({
-        theme_color: "#ffc300",
-        background_color: "#ffc300",
+        theme_color: "#006d5b",
+        background_color: "#006d5b",
         display: "standalone",
         scope: `${window.location.origin}`,
         start_url: `${window.location.origin}`,
         short_name: "مهرسان گلد",
         name: "مهرسان گلد",
+        description: "پلتفرم خرید و فروش طلا و ارز دیجیتال",
         icons,
       });
       manifestElement?.setAttribute(
@@ -145,6 +170,31 @@ export default function App({ Component, pageProps }) {
       );
     }
   }, [noRefresh]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    if (!isLocalhost) return;
+    if (!('serviceWorker' in navigator)) return;
+
+    (async () => {
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((r) => r.unregister()));
+      } catch (e) {
+        // ignore
+      }
+
+      try {
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((k) => caches.delete(k)));
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
+  }, []);
 
   return (
     <AppWrapper>

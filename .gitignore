@@ -5,6 +5,11 @@ node_modules/
 .env*.local
 dist/
 
+# OS / local runtime artifacts
+.DS_Store
+.logs/
+.pids/
+
 # Local development files
 *.local.md
 README.local.md

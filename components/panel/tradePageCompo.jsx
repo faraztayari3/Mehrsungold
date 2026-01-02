@@ -71,6 +71,40 @@ const TradePageCompo = (props) => {
     const [isPayLater, setIsPayLater] = useState(false);
     const [price, setPrice] = useState();
 
+    const getRawUnitPrice = (side) => {
+        const base = Number(tradeableInfo?.tradeable?.price);
+        if (Number.isFinite(base) && base > 0) return base;
+
+        if (side === 'buy') {
+            const buyPrice = Number(tradeableInfo?.buyPrice);
+            const buyWage = Number(tradeableInfo?.buyWage);
+            if (Number.isFinite(buyPrice) && Number.isFinite(buyWage) && buyPrice > 0) return buyPrice - buyWage;
+            return Number.isFinite(buyPrice) ? buyPrice : 0;
+        }
+
+        const sellPrice = Number(tradeableInfo?.sellPrice);
+        const sellWage = Number(tradeableInfo?.sellWage);
+        if (Number.isFinite(sellPrice) && Number.isFinite(sellWage) && sellPrice > 0) return sellPrice + sellWage;
+        return Number.isFinite(sellPrice) ? sellPrice : 0;
+    };
+
+    const getFeeBreakdown = (side) => {
+        const amount = Number(tradeableAmount);
+        if (!Number.isFinite(amount) || amount <= 0) return { feePercent: 0, feeAmount: 0 };
+
+        const rawUnitPrice = getRawUnitPrice(side);
+        const unitWage = side === 'buy' ? Number(tradeableInfo?.buyWage) : Number(tradeableInfo?.sellWage);
+        const safeUnitWage = Number.isFinite(unitWage) ? unitWage : 0;
+
+        const feePercent = rawUnitPrice > 0 ? (safeUnitWage / rawUnitPrice) * 100 : 0;
+        const feeAmount = amount * safeUnitWage;
+
+        return {
+            feePercent: Number.isFinite(feePercent) ? feePercent : 0,
+            feeAmount: Number.isFinite(feeAmount) ? feeAmount : 0,
+        };
+    };
+
     /**
      * Retrieves User Info for the user.
      * @returns None
@@ -599,6 +633,24 @@ const TradePageCompo = (props) => {
         }
     ]
     const [priceType, setPriceType] = useState('MarketOrder');
+
+    const getRawBuyUnitPrice = (data) => {
+        const base = Number(data?.tradeable?.price);
+        if (Number.isFinite(base)) return base;
+        const buyPrice = Number(data?.buyPrice);
+        const buyWage = Number(data?.buyWage);
+        if (Number.isFinite(buyPrice) && Number.isFinite(buyWage)) return buyPrice - buyWage;
+        return Number.isFinite(buyPrice) ? buyPrice : 0;
+    };
+
+    const getRawSellUnitPrice = (data) => {
+        const base = Number(data?.tradeable?.price);
+        if (Number.isFinite(base)) return base;
+        const sellPrice = Number(data?.sellPrice);
+        const sellWage = Number(data?.sellWage);
+        if (Number.isFinite(sellPrice) && Number.isFinite(sellWage)) return sellPrice + sellWage;
+        return Number.isFinite(sellPrice) ? sellPrice : 0;
+    };
     const handleChangePriceType = (event) => {
         setPrice(router.query.type == 'buy' ? tradeableInfo?.buyPrice : tradeableInfo?.sellPrice);
         if (event.target.value == 'MarketOrder') {
@@ -653,7 +705,7 @@ const TradePageCompo = (props) => {
                             </div>}
                             <div className="flex items-center gap-x-4">
                                 <span>قیمت خرید:</span>
-                                <span><span className="ltr text-secondary-green dark:text-buy">{(tradeableInfo?.buyPrice || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> تومان</span>
+                                <span><span className="ltr text-secondary-green dark:text-buy">{(getRawBuyUnitPrice(tradeableInfo) || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> تومان</span>
                             </div>
                         </div> : <div className="flex items-center justify-between gap-x-2 py-6 px-4">
                             {(tradeableInfo?.tradeable?.chartLink && tradeableInfo?.tradeable?.chartLink != 'disable') ? <div></div> : <div className="flex items-center gap-x-4">
@@ -664,7 +716,7 @@ const TradePageCompo = (props) => {
                             </div>}
                             <div className="flex items-center gap-x-4">
                                 <span>قیمت فروش:</span>
-                                <span><span className="ltr text-sell">{(tradeableInfo?.sellPrice || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> تومان</span>
+                                <span><span className="ltr text-sell">{(getRawSellUnitPrice(tradeableInfo) || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> تومان</span>
                             </div>
                         </div>}
 
@@ -796,10 +848,14 @@ const TradePageCompo = (props) => {
                                             }}
                                             value={rialAmount}
                                             onChange={(event) => calcInputAmountBuy(event, 'TMN')} />
-                                        {rialPureAmount > 0 ? <FormHelperText className="text-black text-xs dark:text-alert-warning-foreground">مبلغ خالص پرداختی :
-                                            <span>
-                                                {floorNumber((rialPureAmount || 0), (tradeableInfo?.tradeable?.buyMaxDecimals))?.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                                            </span> تومان می باشد.</FormHelperText> : ''}
+                                        {rialPureAmount > 0 ? (() => {
+                                            const { feePercent, feeAmount } = getFeeBreakdown('buy');
+                                            return (
+                                                <FormHelperText className="text-black text-xs dark:text-alert-warning-foreground">
+                                                    به اضافه <span>{feePercent.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>٪ کارمزد به مبلغ <span>{floorNumber((feeAmount || 0), 0)?.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span> تومان.
+                                                </FormHelperText>
+                                            );
+                                        })() : ''}
                                     </FormControl>
                                     <div className="px-4">
                                         <span className="flex items-center gap-x-4">
@@ -859,8 +915,8 @@ const TradePageCompo = (props) => {
                                             <text className="text-black font-semibold">ثبت خرید</text>
                                         </LoadingButton >
                                     </div> : errorWalletBuy ? <div className="lg:max-w-40 lg:mx-auto px-4">
-                                        <LinkRouter legacyBehavior href="/panel/deposit?type=online">
-                                            <Button href="/panel/deposit?type=online" variant="contained" color="primary" size="medium" className="custom-btn text-xs w-full text-black rounded-lg"
+                                        <LinkRouter legacyBehavior href="/panel/deposit?type=offline">
+                                            <Button href="/panel/deposit?type=offline" variant="contained" color="primary" size="medium" className="custom-btn text-xs w-full text-black rounded-lg"
                                                 startIcon={<svg viewBox="0 0 24 24" className="svg-icon text-2xl">
                                                     <path d="M12.9 1.42c-.33 0-.66.059-.97.176a1 1 0 0 0-.003 0l-7.26 2.742c-1.4.53-2.33 1.88-2.33 3.377v4.81a6.144 6.144 0 0 0-.476 7.058 6.13 6.13 0 0 0 5.28 2.994c1.196 0 2.32-.344 3.27-.948a1 1 0 0 0 .17.034h6.694c2.437 0 4.438-2.003 4.438-4.44v-.355c.575-.338.968-.96.968-1.664v-1.883c0-.704-.393-1.326-.968-1.664v-.586c0-2.437-2-4.438-4.438-4.438h-1.643V4.16a2.728 2.728 0 0 0-1.18-2.251 2.738 2.738 0 0 0-1.553-.489zm-.094 2.006a.754.754 0 0 1 .51.125.73.73 0 0 1 .23.266.736.736 0 0 1 .086.341 1 1 0 0 0 0 .002v2.473H6.777c-.879 0-1.7.264-2.393.711.12-.516.48-.941.99-1.135l7.26-2.742a.721.721 0 0 1 .172-.04zM6.777 8.633h10.5a2.435 2.435 0 0 1 2.438 2.438v.318h-.847c-.771 0-1.5.312-2.023.846a2.84 2.84 0 0 0-.836 2.281c.132 1.55 1.497 2.62 2.97 2.62h.737v.087a2.436 2.436 0 0 1-2.438 2.439h-4.904l.05-.084c.57-.93.895-2.024.895-3.176a6.172 6.172 0 0 0-3.502-5.564 6.159 6.159 0 0 0-5.467.063 2.434 2.434 0 0 1 2.43-2.268zm.477 3.6a4.177 4.177 0 0 1 3.42 1.947c.419.666.64 1.436.64 2.223 0 .783-.217 1.52-.6 2.14a1 1 0 0 0-.01.02 3.66 3.66 0 0 1-.802.954 1 1 0 0 0-.027.023 4.039 4.039 0 0 1-2.734 1.037 1 1 0 0 0-.002 0 4.137 4.137 0 0 1-3.563-2.019 1 1 0 0 0-.005-.014 4.07 4.07 0 0 1-.604-2.139 1 1 0 0 0 0-.002c0-1.323.604-2.493 1.561-3.252a1 1 0 0 0 .005-.003 4.17 4.17 0 0 1 2.721-.915zm11.61 1.156h1.816v1.748h-1.705c-.5 0-.945-.37-.98-.793a1 1 0 0 0-.003-.012.83.83 0 0 1 .254-.68 1 1 0 0 0 .018-.017.803.803 0 0 1 .6-.246zm-11.73.568a.75.75 0 0 0-.75.75v.907h-.94a.75.75 0 0 0-.75.75.75.75 0 0 0 .75.75h.94v.986a.75.75 0 0 0 .75.75.75.75 0 0 0 .75-.75v-.986h.945a.75.75 0 0 0 .75-.75.75.75 0 0 0-.75-.75h-.945v-.907a.75.75 0 0 0-.75-.75z"></path>
                                                 </svg>}>
@@ -980,10 +1036,14 @@ const TradePageCompo = (props) => {
                                             }}
                                             value={rialAmount}
                                             onChange={(event) => calcInputAmountSell(event, 'TMN')} />
-                                        {rialPureAmount > 0 ? <FormHelperText className="text-black text-xs dark:text-alert-warning-foreground">مبلغ خالص دریافتی :
-                                            <span>
-                                                {floorNumber((rialPureAmount || 0), (tradeableInfo?.tradeable?.sellMaxDecimals))?.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                                            </span> تومان می باشد.</FormHelperText> : ''}
+                                        {rialPureAmount > 0 ? (() => {
+                                            const { feePercent, feeAmount } = getFeeBreakdown('sell');
+                                            return (
+                                                <FormHelperText className="text-black text-xs dark:text-alert-warning-foreground">
+                                                    به اضافه <span>{feePercent.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>٪ کارمزد به مبلغ <span>{floorNumber((feeAmount || 0), 0)?.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span> تومان.
+                                                </FormHelperText>
+                                            );
+                                        })() : ''}
                                     </FormControl>
                                     <div className="px-4">
                                         <span className="flex items-center gap-x-4">
@@ -1098,10 +1158,10 @@ const TradePageCompo = (props) => {
                                                 </div>
                                             </td>
                                             <td className="px-6 text-start text-primary-green font-semibold">
-                                                <span>{(data?.buyPrice || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان</span>
+                                                <span>{(getRawBuyUnitPrice(data) || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان</span>
                                             </td>
                                             <td className="px-6 text-start text-primary-red font-semibold">
-                                                <span>{(data?.sellPrice || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان</span>
+                                                <span>{(getRawSellUnitPrice(data) || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان</span>
                                             </td>
                                             <td className="px-4 text-end">
                                                 <span>{(data?.balance || 0).toLocaleString('en-US', { maximumFractionDigits: 3 })} گرم</span>
@@ -1168,10 +1228,10 @@ const TradePageCompo = (props) => {
                                                 </div>
                                             </td>
                                             <td className="text-start text-primary-green font-semibold">
-                                                <span>{(data?.buyPrice || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان</span>
+                                                <span>{(getRawBuyUnitPrice(data) || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان</span>
                                             </td>
                                             <td className="text-start text-primary-red font-semibold">
-                                                <span>{(data?.sellPrice || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان</span>
+                                                <span>{(getRawSellUnitPrice(data) || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} تومان</span>
                                             </td>
                                             <td className="text-end">
                                                 <span>{(data?.balance || 0).toLocaleString('en-US', { maximumFractionDigits: 3 })} گرم</span>

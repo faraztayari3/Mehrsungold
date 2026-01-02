@@ -131,11 +131,15 @@ const TradeablesPageCompo = (props) => {
 
     const [tradeableData, setTradeableData] = useState();
     const [tradeableHasChart, setTradeableHasChart] = useState(false);
+    const [priceAdjustmentPercentTouched, setPriceAdjustmentPercentTouched] = useState(false);
+    const [priceApiHeadersTouched, setPriceApiHeadersTouched] = useState(false);
     const [showEditTradeable, setShowEditTradeable] = useState(false);
     const [openBottomEditTradeableDrawer, setOpenBottomEditTradeableDrawer] = useState(false);
     const handleShowEditTradeable = (data) => () => {
         setTradeableData(data);
         setTradeableHasChart(data.chartLink && data.chartLink != 'disable' ? true : false);
+        setPriceAdjustmentPercentTouched(false);
+        setPriceApiHeadersTouched(false);
         if (window.innerWidth >= 1024) {
             setShowEditTradeable(true);
             setOpenBottomEditTradeableDrawer(false);
@@ -283,7 +287,12 @@ const TradeablesPageCompo = (props) => {
                 value = event.target.checked;
                 break;
             case "numberFormat":
-                value = Number(event.target.value.replace(/,/g, ''));
+                // Important: empty string should NOT become 0.
+                // NumericFormat can emit empty when user clears the input.
+                {
+                    const cleaned = (event?.target?.value ?? '').replace(/,/g, '');
+                    value = cleaned === '' ? undefined : Number(cleaned);
+                }
                 break;
             case "priceApi":
                 value = event.target.value;
@@ -297,9 +306,22 @@ const TradeablesPageCompo = (props) => {
                 value = event.target.value;
                 break;
         }
+
+        if (input === 'priceAdjustmentPercent') {
+            setPriceAdjustmentPercentTouched(true);
+        }
+
         setTradeableData((prevState) => ({
             ...prevState,
             [input]: value,
+        }));
+    }
+
+    const handleChangeEditPriceAdjustmentPercent = (values) => {
+        setPriceAdjustmentPercentTouched(true);
+        setTradeableData((prevState) => ({
+            ...prevState,
+            priceAdjustmentPercent: typeof values?.floatValue === 'number' ? values.floatValue : undefined,
         }));
     }
 
@@ -471,6 +493,13 @@ const TradeablesPageCompo = (props) => {
             setLoading(true);
             const { priceApiHeaders, ...tradeableDataWithoutHeaders } = tradeableData;
             let newData = FilterEmptyFields(tradeableDataWithoutHeaders);
+
+            // Only apply price adjustment if admin manually edited it.
+            // Prevents any implicit/default value from being sent for tradeables like silver.
+            if (!priceAdjustmentPercentTouched) {
+                delete newData.priceAdjustmentPercent;
+            }
+
             const filteredData = FilterObjectFields(newData, [
                 "name",
                 "nameFa",
@@ -479,6 +508,7 @@ const TradeablesPageCompo = (props) => {
                 "priceApiMethod",
                 "isToman",
                 "price",
+                "priceAdjustmentPercent",
                 "stock",
                 "stockThreshold",
                 "onlinePriceUpdate",
@@ -496,7 +526,7 @@ const TradeablesPageCompo = (props) => {
             ]);
             let body = {
                 ...filteredData,
-                ...(tradeableData?.onlinePriceUpdate && { priceApiHeaders: tradeableData?.priceApiHeaders })
+                ...(tradeableData?.onlinePriceUpdate && priceApiHeadersTouched && { priceApiHeaders: tradeableData?.priceApiHeaders })
             }
 
             ApiCall(`/tradeable/${tradeableId}`, 'PATCH', locale, { ...body }, '', 'admin', router).then(async (result) => {
@@ -2712,6 +2742,7 @@ const TradeablesPageCompo = (props) => {
                                 <span className="whitespace-nowrap">هدرهای وبسرویس</span>
                                 <Divider component="div" className="w-[78%] dark:bg-primary dark:bg-opacity-50" />
                                 <IconButton onClick={() => {
+                                    setPriceApiHeadersTouched(true);
                                     setTradeableData(prevState => {
                                         const updatedHeaders = [
                                             ...(prevState.priceApiHeaders || []),
@@ -2730,6 +2761,7 @@ const TradeablesPageCompo = (props) => {
                                 <div key={index} className="col-span-12 grid grid-cols-12 gap-4 relative">
                                     <Button variant="text" color="error" size="small" className="custom-btn rounded-lg absolute -top-8 rtl:left-0 ltr:right-0"
                                         onClick={() => {
+                                            setPriceApiHeadersTouched(true);
                                             setTradeableData(prevState => {
                                                 const updatedHeaders = [...prevState.priceApiHeaders];
                                                 updatedHeaders.splice(index, 1);
@@ -2759,6 +2791,7 @@ const TradeablesPageCompo = (props) => {
                                                 value={data.key}
                                                 onChange={(event) => {
                                                     const value = event.target.value;
+                                                    setPriceApiHeadersTouched(true);
                                                     setTradeableData(prevState => {
                                                         const updatedHeaders = [...prevState.priceApiHeaders];
                                                         updatedHeaders[index] = {
@@ -2805,6 +2838,7 @@ const TradeablesPageCompo = (props) => {
                                                 value={data.value}
                                                 onChange={(event) => {
                                                     const value = event.target.value;
+                                                    setPriceApiHeadersTouched(true);
                                                     setTradeableData(prevState => {
                                                         const updatedHeaders = [...prevState.priceApiHeaders];
                                                         updatedHeaders[index] = {
@@ -2946,6 +2980,32 @@ const TradeablesPageCompo = (props) => {
                                     value={tradeableData?.apiError} />
                             </FormControl>
                         </div> : ''}
+
+                        <div className="col-span-12 md:col-span-6">
+                            <FormControl className="w-full">
+                                <NumericFormat
+                                    thousandSeparator
+                                    allowNegative
+                                    decimalScale={3}
+                                    customInput={TextField}
+                                    type="tel"
+                                    label="تغییر قیمت دریافتی"
+                                    variant="outlined"
+                                    InputLabelProps={{
+                                        sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' }
+                                    }}
+                                    InputProps={{
+                                        classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-end text-white' : 'text-end text-black', focused: 'border-none' },
+                                        sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' },
+                                        inputProps: {
+                                            inputMode: 'decimal'
+                                        }
+                                    }}
+                                    value={tradeableData?.priceAdjustmentPercent ?? ''}
+                                    onValueChange={handleChangeEditPriceAdjustmentPercent}
+                                    onChange={undefined} />
+                            </FormControl>
+                        </div>
                     </form>
                     <div className="text-end">
                         <LoadingButton type="button" variant="contained" size="medium" className="rounded-lg" disableElevation loading={loading}
@@ -3370,6 +3430,7 @@ const TradeablesPageCompo = (props) => {
                                 <span className="whitespace-nowrap">هدرهای وبسرویس</span>
                                 <Divider component="div" className="w-[78%] dark:bg-primary dark:bg-opacity-50" />
                                 <IconButton onClick={() => {
+                                    setPriceApiHeadersTouched(true);
                                     setTradeableData(prevState => {
                                         const updatedHeaders = [
                                             ...(prevState.priceApiHeaders || []),
@@ -3388,6 +3449,7 @@ const TradeablesPageCompo = (props) => {
                                 <div key={index} className="col-span-12 grid grid-cols-12 gap-4 relative">
                                     <Button variant="text" color="error" size="small" className="custom-btn rounded-lg absolute -top-8 rtl:left-0 ltr:right-0"
                                         onClick={() => {
+                                            setPriceApiHeadersTouched(true);
                                             setTradeableData(prevState => {
                                                 const updatedHeaders = [...prevState.priceApiHeaders];
                                                 updatedHeaders.splice(index, 1);
@@ -3417,6 +3479,7 @@ const TradeablesPageCompo = (props) => {
                                                 value={data.key}
                                                 onChange={(event) => {
                                                     const value = event.target.value;
+                                                    setPriceApiHeadersTouched(true);
                                                     setTradeableData(prevState => {
                                                         const updatedHeaders = [...prevState.priceApiHeaders];
                                                         updatedHeaders[index] = {
@@ -3463,6 +3526,7 @@ const TradeablesPageCompo = (props) => {
                                                 value={data.value}
                                                 onChange={(event) => {
                                                     const value = event.target.value;
+                                                    setPriceApiHeadersTouched(true);
                                                     setTradeableData(prevState => {
                                                         const updatedHeaders = [...prevState.priceApiHeaders];
                                                         updatedHeaders[index] = {
@@ -3604,6 +3668,32 @@ const TradeablesPageCompo = (props) => {
                                     value={tradeableData?.apiError} />
                             </FormControl>
                         </div> : ''}
+
+                        <div className="col-span-12">
+                            <FormControl className="w-full">
+                                <NumericFormat
+                                    thousandSeparator
+                                    allowNegative
+                                    decimalScale={3}
+                                    customInput={TextField}
+                                    type="tel"
+                                    label="تغییر قیمت دریافتی"
+                                    variant="outlined"
+                                    InputLabelProps={{
+                                        sx: { color: darkModeToggle ? 'rgb(255, 255, 255,0.7)' : 'rgb(0, 0, 0,0.7)' }
+                                    }}
+                                    InputProps={{
+                                        classes: { root: 'dark:bg-dark', input: darkModeToggle ? 'text-end text-white' : 'text-end text-black', focused: 'border-none' },
+                                        sx: { border: '1px solid rgb(255, 255, 255,0.2)', borderRadius: '16px' },
+                                        inputProps: {
+                                            inputMode: 'decimal'
+                                        }
+                                    }}
+                                    value={tradeableData?.priceAdjustmentPercent ?? ''}
+                                    onValueChange={handleChangeEditPriceAdjustmentPercent}
+                                    onChange={undefined} />
+                            </FormControl>
+                        </div>
                     </section>
                     <div className="w-full">
                         <LoadingButton type="button" variant="contained" size="medium" fullWidth className="rounded-lg" disableElevation loading={loading}
